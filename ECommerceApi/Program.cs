@@ -4,6 +4,7 @@ using ECommerceApi.Interfaces;
 using Backend_e_commerce_website.Interfaces;
 using Backend_e_commerce_website.Services;
 using ECommerceApi.Helpers;
+using ECommerceApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +39,7 @@ builder.Services.AddTransient<PasswordHelper>();
 // Register Service
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 
 
 
