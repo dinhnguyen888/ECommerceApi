@@ -1,10 +1,13 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using ECommerceApi.Interfaces;
-using Backend_e_commerce_website.Interfaces;
-using Backend_e_commerce_website.Services;
 using ECommerceApi.Helpers;
 using ECommerceApi.Services;
+using Backend_e_commerce_website.Interfaces;
+using Backend_e_commerce_website.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,19 +32,40 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 });
 builder.Services.AddSingleton<MongoDbContext>();
 
-// Auto register all AutoMapper PRofile
+// Auto register all AutoMapper Profiles
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-//Register Helper
+// Register Helper
 builder.Services.AddTransient<PasswordHelper>();
-
 
 // Register Service
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
+// JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
 
 // Build the app
 var app = builder.Build();
@@ -74,7 +98,7 @@ try
 {
     var mongoClient = app.Services.GetRequiredService<IMongoClient>();
     Console.WriteLine("Testing MongoDB connection...");
-    var databaseList = mongoClient.ListDatabaseNames().ToList(); // Attempt to list databases
+    var databaseList = mongoClient.ListDatabaseNames().ToList();
     Console.WriteLine("MongoDB connection successful!");
     Console.WriteLine($"Databases: {string.Join(", ", databaseList)}");
 }
@@ -92,6 +116,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication(); // Add authentication middleware
 app.UseAuthorization();
 
 app.MapControllers();
