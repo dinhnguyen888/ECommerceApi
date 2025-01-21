@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using ECommerceApi.Interfaces;
 using Backend_e_commerce_website.Interfaces;
 using Backend_e_commerce_website.Services;
+using ECommerceApi.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,8 +31,11 @@ builder.Services.AddSingleton<MongoDbContext>();
 // Auto register all AutoMapper PRofile
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+//Register Helper
+builder.Services.AddTransient<PasswordHelper>();
 
-// Register IProductService
+
+// Register Service
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 

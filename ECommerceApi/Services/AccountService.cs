@@ -6,18 +6,20 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using ECommerceApi.Helpers;
 namespace Backend_e_commerce_website.Services
 {
     public class AccountService : IAccountService
     {
         private readonly AppDbContext _context; 
         private readonly IMapper _mapper;
+        private readonly PasswordHelper _passwordHelper;
 
-        public AccountService(AppDbContext context, IMapper mapper)
+        public AccountService(AppDbContext context, IMapper mapper, PasswordHelper passwordHelper)
         {
             _context = context;
             _mapper = mapper;
+            _passwordHelper = passwordHelper;
         }
 
         public async Task<IEnumerable<AccountGetDto>> GetAllAccountsAsync()
@@ -35,9 +37,13 @@ namespace Backend_e_commerce_website.Services
 
         public async Task<AccountGetDto> CreateAccountAsync(AccountPostDto accountDto)
         {
+            var checkRole = await _context.Roles.SingleOrDefaultAsync(r => r.Id == accountDto.RoleId);
+
+            //check Role
+            if (checkRole == null) throw new ArgumentException("Role can not found");
             var account = _mapper.Map<Account>(accountDto);
             account.Id = Guid.NewGuid();
-            account.Password = HashPassword(accountDto.Password); 
+            account.Password = _passwordHelper.HashPassword(accountDto.Password); 
             _context.Set<Account>().Add(account);
             await _context.SaveChangesAsync();
             return _mapper.Map<AccountGetDto>(account);
@@ -64,14 +70,6 @@ namespace Backend_e_commerce_website.Services
             return true;
         }
 
-        private string HashPassword(string password)
-        {
-            return BCrypt.Net.BCrypt.HashPassword(password);
-        }
-
-        private bool VerifyPassword(string password, string hashedPassword)
-        {
-            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
-        }
+     
     }
 }

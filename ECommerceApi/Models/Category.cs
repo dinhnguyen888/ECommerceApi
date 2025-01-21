@@ -6,7 +6,7 @@ namespace ECommerceApi.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public int Id { get; set; }
+        public string Id { get; set; }
         [BsonElement("categoryName")]
         public string CategoryName { get; set; }
         [BsonElement("blockName")]
