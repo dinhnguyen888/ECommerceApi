@@ -1,13 +1,11 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
 
-namespace ECommerceApi.Models
+namespace ECommerceApi.Dtos
 {
-    public class Product
+    public class ProductPostDto
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+
 
         [BsonElement("title")]
         public string Title { get; set; }
@@ -25,6 +23,6 @@ namespace ECommerceApi.Models
         public string ImageUrl { get; set; }
 
         [BsonElement("createdAt")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
     }
 }
