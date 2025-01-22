@@ -79,6 +79,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
