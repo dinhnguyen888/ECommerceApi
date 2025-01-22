@@ -12,16 +12,19 @@ namespace ECommerceApi.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ITokenService _tokenService;
         private readonly IRefreshTokenService _refreshTokenService;
+        private readonly IConfiguration _configuration;
         public GitHubService
             (
             IHttpContextAccessor httpContextAccessor,
             ITokenService tokenService,
-            IRefreshTokenService refreshTokenService
+            IRefreshTokenService refreshTokenService,
+            IConfiguration configuration
             )
         {
             _httpContextAccessor = httpContextAccessor;
             _tokenService = tokenService;
             _refreshTokenService = refreshTokenService;
+            _configuration = configuration;
         }
         public async Task<string> GetAccessToken()
         {
@@ -52,8 +55,10 @@ namespace ECommerceApi.Services
         public async Task<string> GetGitHubUserData(string accessToken)
         {
             using var client = new HttpClient();
+            var userAgent = _configuration["Github:UserAgent"];
+
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
-            client.DefaultRequestHeaders.Add("User-Agent", "ECommerce");
+            client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 
             var response = await client.GetAsync("https://api.github.com/user");
 
