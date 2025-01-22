@@ -1,9 +1,11 @@
-﻿namespace ECommerceApi.Interfaces
-{
-    public interface IGitHubAuthService
-    {
-        Task<string> GetAccessTokenAsync(string code);
-        Task<string> GetUserDetailsAsync(string accessToken);
-    }
+﻿using System.Threading.Tasks;
 
+namespace ECommerceApi.Interfaces
+{
+    public interface IGitHubService
+    {
+        Task<string> GetAccessToken();
+        Task<string> GetGitHubUserData(string accessToken);
+        Task<(string,string)> GenerateTokenForGitHubUser(string userData, Guid userId);
+    }
 }

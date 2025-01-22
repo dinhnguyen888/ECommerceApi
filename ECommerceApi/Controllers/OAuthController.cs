@@ -1,16 +1,22 @@
-﻿using AspNet.Security.OAuth.GitHub;
-using ECommerceApi.Interfaces;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using ECommerceApi.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using System;
+using System.Threading.Tasks;
 
 namespace ECommerceApi.Controllers
 {
     [Route("api/[controller]")]
     public class OAuthController : Controller
     {
-        [HttpGet("login")]
+        private readonly IGitHubService _gitHubService;
+
+        public OAuthController(IGitHubService gitHubService)
+        {
+            _gitHubService = gitHubService;
+        }
+
+        [HttpGet("login")]  
         public IActionResult Login()
         {
             try
@@ -18,7 +24,7 @@ namespace ECommerceApi.Controllers
                 var properties = new AuthenticationProperties
                 {
                     RedirectUri = Url.Action("Callback", "OAuth"),
-                    Items = { { "scheme", "GitHub" } } 
+                    Items = { { "scheme", "GitHub" } }
                 };
 
                 if (string.IsNullOrEmpty(properties.RedirectUri))
@@ -39,46 +45,19 @@ namespace ECommerceApi.Controllers
         {
             try
             {
-                // Lấy access token từ context
-                var authenticateResult = await HttpContext.AuthenticateAsync("GitHub");
+                // get access token
+                var accessToken = await _gitHubService.GetAccessToken();
 
-                if (!authenticateResult.Succeeded || authenticateResult.Principal == null)
-                {
-                    return BadRequest("GitHub authentication failed.");
-                }
+                // then get data from github
+                var userData = await _gitHubService.GetGitHubUserData(accessToken);
 
-                var accessToken = authenticateResult.Properties?.GetTokenValue("access_token");
-                if (string.IsNullOrEmpty(accessToken))
-                {
-                    return BadRequest(new { Message = "Access token is missing or invalid." });
-                }
-
-                // Tạo HttpClient và cấu hình tiêu đề Authorization
-                using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
-                client.DefaultRequestHeaders.Add("User-Agent", "ECommerce");
-
-                // Gửi yêu cầu GET đến endpoint của GitHub
-                var response = await client.GetAsync("https://api.github.com/user");
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorDetail = await response.Content.ReadAsStringAsync();
-                    return StatusCode((int)response.StatusCode, new
-                    {
-                        Message = "Failed to retrieve user data from GitHub.",
-                        Error = errorDetail
-                    });
-                }
-
-                // Xử lý dữ liệu người dùng trả về
-                var userData = await response.Content.ReadAsStringAsync();
-
+                //then generate internal JWT token
+                //## Not completed yet
                 return Ok(new
                 {
                     Message = "GitHub login successful.",
                     UserData = userData,
-                    AccessToken = accessToken
+                   
                 });
             }
             catch (Exception ex)
@@ -90,9 +69,5 @@ namespace ECommerceApi.Controllers
                 });
             }
         }
-
-
-
     }
 }
-

@@ -1,55 +1,83 @@
-﻿using ECommerceApi.Interfaces;
-using Microsoft.Extensions.Configuration;
-using System.Net.Http.Headers;
-using System.Text.Json;
-
-public class GitHubAuthService : IGitHubAuthService
+﻿using ECommerceApi.Dtos;
+using ECommerceApi.Interfaces;
+using Microsoft.AspNetCore.Authentication;
+using MongoDB.Bson.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+namespace ECommerceApi.Services
 {
-    private readonly IConfiguration _configuration;
-
-    public GitHubAuthService(IConfiguration configuration)
+    public class GitHubService : IGitHubService
     {
-        _configuration = configuration;
-    }
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITokenService _tokenService;
+        private readonly IRefreshTokenService _refreshTokenService;
+        public GitHubService
+            (
+            IHttpContextAccessor httpContextAccessor,
+            ITokenService tokenService,
+            IRefreshTokenService refreshTokenService
+            )
+        {
+            _httpContextAccessor = httpContextAccessor;
+            _tokenService = tokenService;
+            _refreshTokenService = refreshTokenService;
+        }
+        public async Task<string> GetAccessToken()
+        {
+            var httpContext = _httpContextAccessor.HttpContext;
 
-    public async Task<string> GetAccessTokenAsync(string code)
-    {
-        var clientId = _configuration["Github:ClientId"];
-        var clientSecret = _configuration["Github:ClientSecret"];
-
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-        var tokenResponse = await client.PostAsync("https://github.com/login/oauth/access_token",
-            new FormUrlEncodedContent(new Dictionary<string, string>
+            if (httpContext == null)
             {
-                { "client_id", clientId },
-                { "client_secret", clientSecret },
-                { "code", code }
-            }));
+                throw new InvalidOperationException("HttpContext is not available.");
+            }
 
-        if (!tokenResponse.IsSuccessStatusCode)
-            throw new Exception("Failed to fetch access token");
+            var authenticateResult = await httpContext.AuthenticateAsync("GitHub");
 
-        var tokenContent = await tokenResponse.Content.ReadAsStringAsync();
-        var tokenData = JsonSerializer.Deserialize<Dictionary<string, string>>(tokenContent);
+            if (!authenticateResult.Succeeded || authenticateResult.Principal == null)
+            {
+                throw new UnauthorizedAccessException("GitHub authentication failed.");
+            }
 
-        if (tokenData == null || !tokenData.TryGetValue("access_token", out var accessToken))
-            throw new Exception("Access token is missing");
+            var accessToken = authenticateResult.Properties?.GetTokenValue("access_token");
 
-        return accessToken;
-    }
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                throw new InvalidOperationException("Access token is missing or invalid.");
+            }
 
-    public async Task<string> GetUserDetailsAsync(string accessToken)
-    {
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("ECommerceApi");
+            return accessToken;
+        }
 
-        var userResponse = await client.GetAsync("https://api.github.com/user");
-        if (!userResponse.IsSuccessStatusCode)
-            throw new Exception("Failed to fetch user details");
+        public async Task<string> GetGitHubUserData(string accessToken)
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
+            client.DefaultRequestHeaders.Add("User-Agent", "ECommerce");
 
-        return await userResponse.Content.ReadAsStringAsync();
+            var response = await client.GetAsync("https://api.github.com/user");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorDetail = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Failed to retrieve user data from GitHub. Error: {errorDetail}");
+            }
+
+            return await response.Content.ReadAsStringAsync();
+        }
+        public async Task<(string,string)> GenerateTokenForGitHubUser(string userData, Guid userId)
+        {
+            var user = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(userData);
+            var methodPara = new TokenGenerateDto
+            {
+                Email = user.login ?? user.name,
+                UserName = user.name,
+                RoleName = "User",
+                UserId = userId,
+            };
+            var accessToken = _tokenService.GenerateToken(methodPara);
+            var refeshToken = await _refreshTokenService.GenerateRefreshTokenAsync(userId);
+            return (accessToken, refeshToken.Token);
+        }
     }
 }

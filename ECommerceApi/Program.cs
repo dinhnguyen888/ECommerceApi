@@ -83,7 +83,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
-builder.Services.AddScoped<IGitHubAuthService, GitHubAuthService>();
+builder.Services.AddScoped<IGitHubService, GitHubService>();
 
 builder.Services.AddCors(options =>
 {
@@ -94,6 +94,7 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+builder.Services.AddHttpContextAccessor();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
