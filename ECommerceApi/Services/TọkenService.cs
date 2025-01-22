@@ -18,7 +18,7 @@ public class TokenService : ITokenService
     }
 
     // 1. Tạo Token
-    public string GenerateToken(AccountGetDto accountDto)
+    public string GenerateToken(TokenGenerateDto dto)
     {
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
@@ -26,10 +26,10 @@ public class TokenService : ITokenService
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.Email, accountDto.Email),
+            new Claim(ClaimTypes.Email, dto.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.NameIdentifier, accountDto.Id.ToString()),
-            new Claim(ClaimTypes.Role, accountDto.RoleName ?? throw new Exception("rolename null"))
+            new Claim(ClaimTypes.NameIdentifier, dto.UserId.ToString()),
+            new Claim(ClaimTypes.Role, dto.RoleName ?? throw new Exception("rolename null"))
         };
 
         var token = new JwtSecurityToken(

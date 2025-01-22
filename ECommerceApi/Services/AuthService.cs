@@ -46,8 +46,8 @@ namespace ECommerceApi.Services
                 throw new UnauthorizedAccessException("Invalid username or password.");
             }
 
-            var accountMapping = _mapper.Map<AccountGetDto>(account);
-            var accessToken = _tokenService.GenerateToken(accountMapping);
+            var inputPara =  _mapper.Map<TokenGenerateDto>(account);
+            var accessToken =  _tokenService.GenerateToken(inputPara);
             var refreshToken = await _refreshTokenService.GenerateRefreshTokenAsync(account.Id);
             return (accessToken, refreshToken.Token);
         }
@@ -76,7 +76,7 @@ namespace ECommerceApi.Services
                 .ThenInclude(a => a.Role)
                 .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
 
-            var accountMapping = _mapper.Map<AccountGetDto>(token.Account);
+            var accountMapping = _mapper.Map<TokenGenerateDto>(token.Account);
             if (token == null) throw new Exception("Invalid refresh token.");
                
             return _tokenService.GenerateToken(accountMapping);

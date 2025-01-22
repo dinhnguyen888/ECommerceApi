@@ -12,7 +12,9 @@ namespace ECommerceApi.Profiles
             CreateMap<Account, AccountGetDto>()
                 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.RoleName));
 
-            
+            CreateMap<Account, TokenGenerateDto>()
+               .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.RoleName));
+
             CreateMap<AccountPostDto, Account>()
                 .ForMember(dest => dest.Password, opt => opt.Ignore()) 
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
