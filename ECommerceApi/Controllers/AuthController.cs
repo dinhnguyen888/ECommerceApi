@@ -24,15 +24,15 @@ namespace ECommerceApi.Controllers
         {
             try
             {
-                var token = await _authService.LoginAsync(email, password);
+                var (accessToken, refeshToken) = await _authService.LoginAsync(email, password);
 
-                if (string.IsNullOrEmpty(token))
+                if (string.IsNullOrEmpty(accessToken))
                 {
                     _logger.LogWarning("Invalid login attempt for user {Username}", email);
                     return Unauthorized("Invalid username or password.");
                 }
 
-                return Ok(new { Token = token });
+                return Ok(new { AccessToken = (accessToken), RefreshToken = (refeshToken) });
             }
             catch (Exception ex)
             {
@@ -60,6 +60,27 @@ namespace ECommerceApi.Controllers
             {
                 _logger.LogError(ex, "Error occurred during registration.");
                 return StatusCode(500, "Internal server error.");
+            }
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromQuery] string refreshToken)
+        {
+            var newAccessToken = await _authService.RefreshTokenAsync(refreshToken);
+            return Ok(new { AccessToken = newAccessToken });
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromQuery] string refreshToken)
+        {
+            try
+            {
+                await _authService.LogoutAsync(refreshToken);
+                return Ok(new { Message = "Logged out successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
             }
         }
     }
