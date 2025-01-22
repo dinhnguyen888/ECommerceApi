@@ -1,4 +1,4 @@
-﻿using Backend_e_commerce_website.Interfaces;
+﻿using ECommerceApi.Interfaces;
 using AutoMapper;
 using ECommerceApi.Dtos;
 using ECommerceApi.Models;
@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ECommerceApi.Helpers;
-namespace Backend_e_commerce_website.Services
+namespace ECommerceApi.Services
 {
     public class AccountService : IAccountService
     {

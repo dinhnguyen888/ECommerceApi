@@ -1,10 +1,10 @@
-﻿using Backend_e_commerce_website.Interfaces;
+﻿using ECommerceApi.Interfaces;
 using ECommerceApi.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 
-namespace Backend_e_commerce_website.Controllers
+namespace ECommerceApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

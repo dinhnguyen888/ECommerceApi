@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 using AutoMapper;
-using Backend_e_commerce_website.Interfaces;
+using ECommerceApi.Interfaces;
 using ECommerceApi.Dtos;
 using ECommerceApi.Helpers;
-using ECommerceApi.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

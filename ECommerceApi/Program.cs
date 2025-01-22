@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -6,8 +6,9 @@ using MongoDB.Driver;
 using ECommerceApi.Interfaces;
 using ECommerceApi.Helpers;
 using ECommerceApi.Services;
-using Backend_e_commerce_website.Interfaces;
-using Backend_e_commerce_website.Services;
+using Microsoft.Extensions.Options;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,8 +49,8 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+    options.CustomOperationIds(e => $"{e.HttpMethod}_{e.RelativePath}");
 });
-
 
 // Configure MySQL DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -63,6 +64,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddSingleton<IMongoClient>(sp =>
 {
     var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDBConnection");
+    if (string.IsNullOrEmpty(mongoConnectionString))
+    {
+        throw new Exception("MongoDB connection string is missing");
+    }
     return new MongoClient(mongoConnectionString);
 });
 builder.Services.AddSingleton<MongoDbContext>();
@@ -70,25 +75,40 @@ builder.Services.AddSingleton<MongoDbContext>();
 // Auto register all AutoMapper Profiles
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// Register Helper
+// Register Helpers and Services
 builder.Services.AddTransient<PasswordHelper>();
-
-// Register Service
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+builder.Services.AddScoped<IGitHubAuthService, GitHubAuthService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+var jwtKey = jwtSettings["Key"];
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new Exception("JWT Key is missing in configuration");
+}
 
+var key = Encoding.UTF8.GetBytes(jwtKey);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = "Cookies";
 })
 .AddJwtBearer(options =>
 {
@@ -102,58 +122,41 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
+})
+.AddCookie("Cookies", options =>
+{
+    options.LoginPath = "/api/Oauth/login"; // URL đăng nhập
+
+})
+.AddOAuth("GitHub", opt =>
+{
+    opt.ClientId = builder.Configuration["Github:ClientId"];
+    opt.ClientSecret = builder.Configuration["Github:ClientSecret"];
+    opt.CallbackPath = new PathString("/api/OAuth/github-login");
+    opt.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+    opt.TokenEndpoint = "https://github.com/login/oauth/access_token";
+    opt.UserInformationEndpoint = "https://api.github.com/user";
+    opt.SaveTokens = true;
+
+    opt.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+    opt.ClaimActions.MapJsonKey(ClaimTypes.Name, "login");
+    opt.ClaimActions.MapJsonKey("urn:github:name", "name");
+    opt.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+    opt.ClaimActions.MapJsonKey("urn:github:url", "html_url");
 });
+
+
 
 // Build the app
 var app = builder.Build();
 
-// Test MySQL connection
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    try
-    {
-        Console.WriteLine("Testing MySQL connection...");
-        var canConnect = dbContext.Database.CanConnect();
-        if (canConnect)
-        {
-            Console.WriteLine("MySQL connection successful!");
-        }
-        else
-        {
-            Console.WriteLine("Failed to connect to MySQL!");
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error testing MySQL connection: {ex.Message}");
-    }
-}
-
-// Test MongoDB connection
-try
-{
-    var mongoClient = app.Services.GetRequiredService<IMongoClient>();
-    Console.WriteLine("Testing MongoDB connection...");
-    var databaseList = mongoClient.ListDatabaseNames().ToList();
-    Console.WriteLine("MongoDB connection successful!");
-    Console.WriteLine($"Databases: {string.Join(", ", databaseList)}");
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Error testing MongoDB connection: {ex.Message}");
-}
-
-// Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Middleware setup
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-
-app.UseAuthentication(); // Add authentication middleware
+app.UseCors("AllowAllOrigins");
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
