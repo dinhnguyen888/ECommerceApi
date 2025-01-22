@@ -18,5 +18,9 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.SetNull); 
 
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Account>()
+            .HasIndex(a => a.Email)
+            .IsUnique();
     }
 }
