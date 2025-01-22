@@ -70,6 +70,12 @@ namespace Backend_e_commerce_website.Services
             return true;
         }
 
+        public async Task<Account> CheckLegitAccount(string email)
+        {
+            var account = await _context.Accounts.Include(a => a.Role).SingleOrDefaultAsync(a => a.Email == email);
+            if (account == null) throw new ArgumentException("account can not be found");
+            return account;
+        }
      
     }
 }

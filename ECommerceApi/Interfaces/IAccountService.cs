@@ -1,4 +1,5 @@
 ﻿using ECommerceApi.Dtos;
+using ECommerceApi.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,5 +12,6 @@ namespace Backend_e_commerce_website.Interfaces
         Task<AccountGetDto> CreateAccountAsync(AccountPostDto accountDto);
         Task<AccountGetDto> UpdateAccountAsync(Guid id, AccountUpdateDto accountDto);
         Task<bool> DeleteAccountAsync(Guid id);
+        Task<Account> CheckLegitAccount(string email);
     }
 }
