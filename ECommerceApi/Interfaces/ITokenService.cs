@@ -1,13 +1,13 @@
-﻿using System.Security.Claims;
+﻿using ECommerceApi.Dtos;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ECommerceApi.Interfaces
 {
     public interface ITokenService
     {
-
-        string GenerateToken(Claim[] claims);
+        string GenerateToken(AccountGetDto accountDto);
         ClaimsPrincipal ValidateToken(string token);
-        Task<DateTime?> GetTokenExpirationAsync(string token);
+        
     }
 }
