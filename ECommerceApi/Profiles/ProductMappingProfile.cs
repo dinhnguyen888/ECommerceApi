@@ -10,6 +10,7 @@ namespace ECommerceApi.Profiles
         {
             CreateMap<ProductUpdateDto, Product>();
             CreateMap<ProductPostDto, Product>();
+            CreateMap<Product, ProductGetDto>();
         }
     }
 }

@@ -15,41 +15,55 @@ public class ProductService : IProductService
         _mapper = mapper;
     }
 
-    public async Task<string> AddProductAsync(ProductPostDto dto)
+    public async Task<string> AddProductAsync(ProductPostDto product)
     {
-        var product = _mapper.Map<Product>(dto);
-        await _productCollection.InsertOneAsync(product);
-        return product.Id;
+        var newProduct = _mapper.Map<Product>(product);
+        await _productCollection.InsertOneAsync(newProduct);
+        return newProduct.Id;
     }
 
-    public async Task<List<Product>> GetAllProductsAsync()
+    public async Task<IEnumerable<ProductGetDto>> GetProductsByPageAsync(int page, int pageSize)
     {
-        return await _productCollection.Find(_ => true).ToListAsync();
+        var skip = (page - 1) * pageSize;
+
+        // Fetch paginated products
+        var products = await _productCollection.Find(_ => true)
+                                               .Skip(skip)
+                                               .Limit(pageSize)
+                                               .ToListAsync();
+
+        return _mapper.Map<IEnumerable<ProductGetDto>>(products);
     }
 
-    public async Task<Product> GetProductByIdAsync(string id)
+    public async Task<int> GetTotalProductsAsync()
     {
-        return await _productCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
+        return (int)await _productCollection.CountDocumentsAsync(_ => true);
     }
 
-    public async Task<bool> UpdateProductAsync(string id, ProductUpdateDto dto)
+    public async Task<ProductGetDto> GetProductByIdAsync(string id)
     {
-        var productExists = await _productCollection.Find(p => p.Id == id).AnyAsync();
+        var product = await _productCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
+        return _mapper.Map<ProductGetDto>(product);
+    }
 
-        if (!productExists)
+    public async Task<bool> UpdateProductAsync(string id, ProductUpdateDto updatedProduct)
+    {
+        var existingProduct = await _productCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
+        if (existingProduct == null)
         {
             return false;
         }
 
-        var product = _mapper.Map<Product>(dto);
-        product.Id = id; // Preserve the ID
-        await _productCollection.ReplaceOneAsync(p => p.Id == id, product);
-        return true;
+        var updated = _mapper.Map<Product>(updatedProduct);
+        updated.Id = id; // Preserve the ID
+
+        var result = await _productCollection.ReplaceOneAsync(p => p.Id == id, updated);
+        return result.ModifiedCount > 0;
     }
 
     public async Task<bool> DeleteProductAsync(string id)
     {
-        var deleteResult = await _productCollection.DeleteOneAsync(p => p.Id == id);
-        return deleteResult.DeletedCount > 0;
+        var result = await _productCollection.DeleteOneAsync(p => p.Id == id);
+        return result.DeletedCount > 0;
     }
 }

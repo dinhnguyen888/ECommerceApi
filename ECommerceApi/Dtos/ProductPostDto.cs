@@ -12,6 +12,8 @@ namespace ECommerceApi.Dtos
 
         [BsonElement("description")]
         public string Description { get; set; }
+        [BsonElement("tag")]
+        public string Tag { get; set; }
 
         [BsonElement("price")]
         public double Price { get; set; }
