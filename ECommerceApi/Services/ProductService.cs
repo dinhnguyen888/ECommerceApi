@@ -26,7 +26,6 @@ public class ProductService : IProductService
     {
         var skip = (page - 1) * pageSize;
 
-        // Fetch paginated products
         var products = await _productCollection.Find(_ => true)
                                                .Skip(skip)
                                                .Limit(pageSize)
@@ -71,4 +70,5 @@ public class ProductService : IProductService
         var product = await _productCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
         return _mapper.Map<ProductGetDetailDto>(product);
     }
+
 }

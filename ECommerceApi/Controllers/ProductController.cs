@@ -141,6 +141,7 @@ public class ProductsController : ControllerBase
             return StatusCode(500, new { message = "An error occurred while fetching the product.", error = ex.Message });
         }
     }
-    
+
+
 }
 

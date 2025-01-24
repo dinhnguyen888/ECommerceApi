@@ -5,8 +5,7 @@ namespace ECommerceApi.Dtos
 {
     public class ProductGetDetailDto
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
+        [BsonElement("id")]
         public string Id { get; set; }
 
         [BsonElement("title")]
@@ -20,13 +19,21 @@ namespace ECommerceApi.Dtos
 
         [BsonElement("specification")]
         public string Specification { get; set; }
+
         [BsonElement("tag")]
         public string Tag { get; set; }
 
-        [BsonElement("imageUrl")]
-        public string ImageUrl { get; set; }
+        [BsonElement("imageUrls")]
+        public List<string> ImageUrls { get; set; } // Lấy toàn bộ danh sách hình ảnh
+
+        [BsonElement("description")]
+        public string Description { get; set; }
+
+        [BsonElement("descriptionDetail")]
+        public string DescriptionDetail { get; set; }
 
         [BsonElement("createdAt")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
     }
+
 }
