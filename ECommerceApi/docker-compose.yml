@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: dotnet-app
+    ports:
+      - "7202:5197"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MySQLConnection=Server=mysql;Database=E-commerce-database;User=root;Password=;
+      -  ConnectionStrings__MongoDBConnection=mongodb+srv://nguyenphucdinh88:Pass0301@e-commerce.bsp6o.mongodb.net/E-Commerce?retryWrites=true&w=majority&appName=E-commerce
+      - Jwt__Key=BackendDuocLenYTuongPhatTrienVaTrienKhaiBoiNguyenPhucDinh
+      - Jwt__Issuer=NguyenPhucDinh
+      - Jwt__Audience=Dinhnguyen888
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: E-commerce-database
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: E-Commerce
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mysql_data:
+
