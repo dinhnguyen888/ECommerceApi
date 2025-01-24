@@ -121,5 +121,26 @@ public class ProductsController : ControllerBase
             return StatusCode(500, new { message = "An error occurred while deleting the product.", error = ex.Message });
         }
     }
+
+    [HttpGet("detail/{id}")]
+    public async Task<IActionResult> GetSpecificationInProduct(string id)
+    {
+        try
+        {
+            var product = await _productService.GetSpecificationInProduct(id);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(product);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while fetching the product.", error = ex.Message });
+        }
+    }
+    
 }
 

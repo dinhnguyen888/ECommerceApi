@@ -66,4 +66,9 @@ public class ProductService : IProductService
         var result = await _productCollection.DeleteOneAsync(p => p.Id == id);
         return result.DeletedCount > 0;
     }
+    public async Task<ProductGetDetailDto> GetSpecificationInProduct(string id)
+    {
+        var product = await _productCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
+        return _mapper.Map<ProductGetDetailDto>(product);
+    }
 }
