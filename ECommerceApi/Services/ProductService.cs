@@ -2,6 +2,7 @@
 using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
 using ECommerceApi.Models;
+using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 
 public class ProductService : IProductService
@@ -70,5 +71,16 @@ public class ProductService : IProductService
         var product = await _productCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
         return _mapper.Map<ProductGetDetailDto>(product);
     }
+
+    public async Task<List<ProductGetDto>> GetRelatedProduct()
+    {
+
+        var randomProducts = await _productCollection.Aggregate()
+            .Sample(3) // take 3 ramdomly
+            .ToListAsync();
+
+        return _mapper.Map<List<ProductGetDto>>(randomProducts);
+    }
+
 
 }

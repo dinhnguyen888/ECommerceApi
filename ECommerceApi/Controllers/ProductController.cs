@@ -142,6 +142,20 @@ public class ProductsController : ControllerBase
         }
     }
 
+    [HttpGet("related/")]
+    public async Task<IActionResult> GetRelatedProduct()
+    {
+        try
+        {
+            var product = await _productService.GetRelatedProduct();
+            return Ok(product);
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while fetching the product.", error = ex.Message });
+        }
+    }
+
 
 }
 

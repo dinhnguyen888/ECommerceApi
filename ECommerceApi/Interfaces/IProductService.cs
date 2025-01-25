@@ -9,4 +9,5 @@ public interface IProductService
     Task<bool> UpdateProductAsync(string id, ProductUpdateDto updatedProduct);
     Task<bool> DeleteProductAsync(string id);
     Task<ProductGetDetailDto> GetSpecificationInProduct(string id);
+    Task<List<ProductGetDto>> GetRelatedProduct();
 }
