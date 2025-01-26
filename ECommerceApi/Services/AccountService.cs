@@ -73,7 +73,7 @@ namespace ECommerceApi.Services
         public async Task<Account> CheckLegitAccount(string email)
         {
             var account = await _context.Accounts.Include(a => a.Role).SingleOrDefaultAsync(a => a.Email == email);
-            if (account == null) throw new ArgumentException("account can not be found");
+            if (account != null) throw new ArgumentException("account can not be found");
             return account;
         }
      

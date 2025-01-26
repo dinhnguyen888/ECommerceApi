@@ -39,7 +39,7 @@ namespace ECommerceApi.Services
 
         public async Task<(string, string)> LoginAsync(string email, string password)
         {
-            var account = await _accountService.CheckLegitAccount(email);
+            var account = await _context.Accounts.Include(a => a.Role).FirstOrDefaultAsync(a => a.Email == email);
 
             if (account == null || !_passwordHelper.VerifyPassword(password, account.Password))
             {
