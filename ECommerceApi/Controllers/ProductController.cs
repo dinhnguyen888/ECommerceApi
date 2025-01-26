@@ -150,7 +150,35 @@ public class ProductsController : ControllerBase
             var product = await _productService.GetRelatedProduct();
             return Ok(product);
         }
-        catch(Exception ex)
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while fetching the product.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("tag/")]
+    public async Task<IActionResult> GetProductByTag([FromQuery] string tag)
+    {
+        try
+        {
+            var product = await _productService.GetProductsByTagAsync(tag);
+            return Ok(product);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while fetching the product.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("search/")]
+    public async Task<IActionResult> SearchProduct([FromQuery] string keyword)
+    {
+        try
+        {
+            var product = await _productService.SearchProductsAsync(keyword);
+            return Ok(product);
+        }
+        catch (Exception ex)
         {
             return StatusCode(500, new { message = "An error occurred while fetching the product.", error = ex.Message });
         }

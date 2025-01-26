@@ -10,4 +10,8 @@ public interface IProductService
     Task<bool> DeleteProductAsync(string id);
     Task<ProductGetDetailDto> GetSpecificationInProduct(string id);
     Task<List<ProductGetDto>> GetRelatedProduct();
+    Task<List<ProductGetDto>> GetProductsByTagAsync(string tag);
+    Task<List<ProductGetDto>> SearchProductsAsync(string keyword);
+
+
 }

@@ -3,6 +3,7 @@ using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
 using ECommerceApi.Models;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 public class ProductService : IProductService
@@ -81,6 +82,25 @@ public class ProductService : IProductService
 
         return _mapper.Map<List<ProductGetDto>>(randomProducts);
     }
+    public async Task<List<ProductGetDto>> GetProductsByTagAsync(string tag)
+    {
+        var products = await _productCollection.Find(p => p.Tag == tag).ToListAsync();
+        return _mapper.Map<List<ProductGetDto>>(products);
+    }
+
+    public async Task<List<ProductGetDto>> SearchProductsAsync(string keyword)
+    {
+      
+        var filter = Builders<Product>.Filter.Or(
+            Builders<Product>.Filter.Regex(p => p.Title, new BsonRegularExpression(keyword, "i")), //regardless of case
+            Builders<Product>.Filter.Regex(p => p.Description, new BsonRegularExpression(keyword, "i")),
+            Builders<Product>.Filter.Regex(p => p.Tag, new BsonRegularExpression(keyword, "i"))
+        );
+
+        var products = await _productCollection.Find(filter).ToListAsync();
+        return _mapper.Map<List<ProductGetDto>>(products);
+    }
+
 
 
 }
