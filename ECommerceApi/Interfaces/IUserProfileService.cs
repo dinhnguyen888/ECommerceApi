@@ -1,4 +1,6 @@
-﻿using ECommerceApi.Models;
+﻿// Do not need Profile feature yet
+
+using ECommerceApi.Models;
 
 namespace ECommerceApi.Services
 {

@@ -69,5 +69,46 @@ namespace ECommerceApi.Controllers
                 });
             }
         }
+
+        [HttpGet("facebook-login")]
+        public IActionResult FacebookLogin()
+        {
+            try
+            {
+                var properties = new AuthenticationProperties
+                {
+                    RedirectUri = Url.Action("FacebookCallback", "OAuth"),
+                    Items = { { "scheme", "Facebook" } }
+                };
+
+                if (string.IsNullOrEmpty(properties.RedirectUri))
+                {
+                    return BadRequest("Redirect URI is missing or invalid.");
+                }
+
+                return Challenge(properties, "Facebook");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred during login.", Error = ex.Message });
+            }
+        }
+
+        [HttpGet("signin-facebook")]
+        public async Task<IActionResult> FacebookCallback()
+        {
+            var result = await HttpContext.AuthenticateAsync("Facebook");
+            if (!result.Succeeded)
+            {
+                return BadRequest("Error during Facebook authentication.");
+            }
+
+            // Process the authentication result
+            var claims = result.Principal.Identities.FirstOrDefault()?.Claims;
+            // Your logic to handle the authenticated user
+
+            return Ok("Facebook login successful.");
+        }
+
     }
 }

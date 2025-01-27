@@ -14,12 +14,14 @@ namespace ECommerceApi.Services
         private readonly AppDbContext _context; 
         private readonly IMapper _mapper;
         private readonly PasswordHelper _passwordHelper;
+        private readonly ITokenService _tokenService;
 
-        public AccountService(AppDbContext context, IMapper mapper, PasswordHelper passwordHelper)
+        public AccountService(AppDbContext context, IMapper mapper, PasswordHelper passwordHelper, ITokenService tokenService)
         {
             _context = context;
             _mapper = mapper;
             _passwordHelper = passwordHelper;
+            _tokenService = tokenService;
         }
 
         public async Task<IEnumerable<AccountGetDto>> GetAllAccountsAsync()
@@ -76,6 +78,16 @@ namespace ECommerceApi.Services
             if (account != null) throw new ArgumentException("account can not be found");
             return account;
         }
-     
+
+        public async Task<AccountGetDto> GetAccountByToken(string token)
+        {
+            var userId = _tokenService.ValidateTokenAndGetUserId(token);
+            if (userId == null) return null;
+            var profile = await _context.Accounts.FirstOrDefaultAsync(a => a.Id.ToString() == userId);
+            var profileMapping = _mapper.Map<AccountGetDto>(profile);
+
+            return profileMapping;
+        }
+
     }
 }

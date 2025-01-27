@@ -11,10 +11,11 @@ using Microsoft.IdentityModel.Tokens;
 public class TokenService : ITokenService
 {
     private readonly IConfiguration _configuration;
-
+    private readonly JwtSecurityTokenHandler _tokenHandler;
     public TokenService(IConfiguration configuration)
     {
         _configuration = configuration;
+        _tokenHandler = new JwtSecurityTokenHandler();
     }
 
     // 1. Tạo Token
@@ -73,7 +74,12 @@ public class TokenService : ITokenService
             return null; 
         }
     }
+    public string? ValidateTokenAndGetUserId(string token)
+    {
+        var jwtToken = _tokenHandler.ReadJwtToken(token);
+        var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "userId");
+        return userIdClaim?.Value;
+    }
 
-   
 
 }

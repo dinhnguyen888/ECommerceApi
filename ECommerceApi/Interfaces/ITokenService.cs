@@ -8,6 +8,8 @@ namespace ECommerceApi.Interfaces
     {
         string GenerateToken(TokenGenerateDto dto);
         ClaimsPrincipal ValidateToken(string token);
-        
+        string? ValidateTokenAndGetUserId(string token);
+
+
     }
 }
