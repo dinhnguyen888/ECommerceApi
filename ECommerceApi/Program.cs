@@ -89,7 +89,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IGitHubService, GitHubService>();
 builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+//builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
 
 
@@ -152,8 +152,18 @@ builder.Services.AddAuthentication(options =>
     opt.ClaimActions.MapJsonKey("urn:github:name", "name");
     opt.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
     opt.ClaimActions.MapJsonKey("urn:github:url", "html_url");
-});
+}
 
+)
+.AddFacebook(options =>
+{
+    options.AppId = builder.Configuration["Facebook:ClientId"];
+    options.AppSecret = builder.Configuration["Facebook:ClientSecret"];
+    options.CallbackPath = new PathString("/signin-facebook");
+    options.SaveTokens = true;
+    options.Scope.Add("email");
+    options.Fields.Add( "email");
+});
 
 
 // Build the app

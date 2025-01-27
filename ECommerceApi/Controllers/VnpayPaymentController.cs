@@ -30,7 +30,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpGet("CreatePaymentUrl")]
-        public ActionResult<string> CreatePaymentUrl(double moneyToPay, string description)
+        public ActionResult<string> CreatePaymentUrl(long moneyToPay, string description)
         {
             try
             {
