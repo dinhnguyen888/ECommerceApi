@@ -8,6 +8,7 @@ public class AppDbContext : DbContext
     public DbSet<Account> Accounts { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<Payment> Payments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,6 +29,11 @@ public class AppDbContext : DbContext
             .HasForeignKey(rt => rt.AccountId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Payment>()
+            .HasOne(p => p.Account)
+            .WithMany()
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
         base.OnModelCreating(modelBuilder);
     }
 }
