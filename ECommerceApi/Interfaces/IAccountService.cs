@@ -14,5 +14,6 @@ namespace ECommerceApi.Interfaces
         Task<bool> DeleteAccountAsync(Guid id);
         Task<Account> CheckLegitAccount(string email);
         Task<AccountGetDto> GetAccountByToken(string token);
+        Task<AccountGetForTokenGithub?> GetAccountByName(string name);
     }
 }

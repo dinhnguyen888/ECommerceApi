@@ -12,6 +12,8 @@ namespace ECommerceApi.Profiles
             CreateMap<Account, AccountGetDto>()
                 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.RoleName));
 
+            CreateMap<Account, AccountGetForTokenGithub>();
+
             CreateMap<Account, TokenGenerateDto>()
                 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.RoleName))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id)); // Map UserId từ Id

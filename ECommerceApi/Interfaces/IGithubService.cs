@@ -6,6 +6,6 @@ namespace ECommerceApi.Interfaces
     {
         Task<string> GetAccessToken();
         Task<string> GetGitHubUserData(string accessToken);
-        Task<(string,string)> GenerateTokenForGitHubUser(string userData, Guid userId);
+        Task<(string,string)> GenerateTokenForGitHubUser(string userData);
     }
 }

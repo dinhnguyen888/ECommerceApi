@@ -19,7 +19,7 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict); 
 
         modelBuilder.Entity<Account>()
-            .HasIndex(a => a.Email)
+            .HasIndex(a => a.Name)
             .IsUnique();
 
         modelBuilder.Entity<RefreshToken>()

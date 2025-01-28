@@ -52,12 +52,12 @@ namespace ECommerceApi.Controllers
                 var userData = await _gitHubService.GetGitHubUserData(accessToken);
 
                 //then generate internal JWT token
-                //## Not completed yet
+                var (systemAccessToken,refreshToken) = await _gitHubService.GenerateTokenForGitHubUser(userData);
                 return Ok(new
                 {
-                    Message = "GitHub login successful.",
-                    UserData = userData,
-                   
+                  accessToken = systemAccessToken,
+                  refreshToken = refreshToken
+
                 });
             }
             catch (Exception ex)

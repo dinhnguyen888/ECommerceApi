@@ -88,6 +88,13 @@ namespace ECommerceApi.Services
 
             return profileMapping;
         }
+        public async Task<AccountGetForTokenGithub?> GetAccountByName(string name)
+        {
+            var checkAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.Name == name);  
+            if (checkAccount == null) return null;
+            return _mapper.Map<AccountGetForTokenGithub>(checkAccount);
+
+        }
 
     }
 }
