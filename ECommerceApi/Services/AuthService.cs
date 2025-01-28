@@ -94,5 +94,27 @@ namespace ECommerceApi.Services
                         
         }
 
+        //make a admin login method
+        public async Task<(string, string)> AdminLoginAsync(string email, string password, string roleName)
+        {
+            //check roleName is existed in database
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == roleName);
+            if (role == null)
+            {
+                throw new UnauthorizedAccessException("Invalid role name.");
+            }
+            var account = await _context.Accounts.Include(a => a.Role).FirstOrDefaultAsync(a => a.Email == email);
+          
+            //add condition to check if account is null or password is not correct or role is not admin
+            if (account == null || !_passwordHelper.VerifyPassword(password, account.Password) || account.Role.RoleName != roleName)
+            {
+                throw new UnauthorizedAccessException("Invalid username or password.");
+            }
+            var inputPara = _mapper.Map<TokenGenerateDto>(account);
+            var accessToken = _tokenService.GenerateToken(inputPara);
+            var refreshToken = await _refreshTokenService.GenerateRefreshTokenAsync(account.Id);
+            return (accessToken, refreshToken.Token);
+        }
+
     }
 }

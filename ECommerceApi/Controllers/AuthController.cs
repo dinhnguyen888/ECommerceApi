@@ -40,6 +40,27 @@ namespace ECommerceApi.Controllers
                 return StatusCode(500, "Internal server error.");
             }
         }
+        [HttpPost("admin-login")]
+        public async Task<IActionResult> AdminLogin([FromQuery] string email, [FromQuery] string password)
+        {
+            try
+            {
+                var (accessToken, refeshToken) = await _authService.AdminLoginAsync(email, password,"Admin");
+
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    _logger.LogWarning("Invalid login attempt for user {Username}", email);
+                    return Unauthorized("Invalid username or password.");
+                }
+
+                return Ok(new { AccessToken = (accessToken), RefreshToken = (refeshToken) });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during login.");
+                return StatusCode(500, "Internal server error.");
+            }
+        }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] AccountPostDto account)
