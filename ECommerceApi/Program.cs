@@ -89,6 +89,10 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IGitHubService, GitHubService>();
 builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<VnpayService>();
+builder.Services.AddSingleton<EmailService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
 //builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
 
