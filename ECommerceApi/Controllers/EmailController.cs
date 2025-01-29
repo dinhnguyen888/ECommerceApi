@@ -14,11 +14,15 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpPost("SendEmail")]
-        public IActionResult SendEmail(string toEmail, string subject, string body)
+        public async Task<IActionResult> SendEmail(string toEmail, string subject, string body)
         {
             try
             {
-                _emailService.SendEmail(toEmail, subject, body);
+                var sendingEmail = await _emailService.SendEmail(toEmail, subject, body);
+                if (!sendingEmail)
+                {
+                    return BadRequest("Error sending email.");
+                }   
                 return Ok("Email sent successfully.");
             }
             catch (Exception ex)

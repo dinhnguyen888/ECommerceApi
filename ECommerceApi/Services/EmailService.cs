@@ -11,7 +11,7 @@ public class EmailService : IEmailService
         _configuration = configuration;
     }
 
-    public async Task SendEmail(string toEmail, string subject, string body)
+    public async Task<bool> SendEmail(string toEmail, string subject, string body)
     {
         try
         {
@@ -26,6 +26,7 @@ public class EmailService : IEmailService
             var message = new MailMessage(email!, toEmail, subject, body);
 
             await smtpClient.SendMailAsync(message);
+            return true;
         }
         catch (SmtpException smtpEx)
         {
