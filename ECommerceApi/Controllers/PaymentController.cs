@@ -46,19 +46,19 @@ namespace ECommerceApi.Controllers
             }
         }
 
-        //[HttpPost]
-        //public async Task<ActionResult<PaymentGetDto>> CreatePayment(PaymentPostDto paymentDto)
-        //{
-        //    try
-        //    {
-        //        var payment = await _paymentService.CreatePaymentAsync(paymentDto);
-        //        return CreatedAtAction(nameof(GetPaymentsByAccountId), new { accountId = payment.UserId }, payment);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { Message = "An error occurred while creating the payment.", Error = ex.Message });
-        //    }
-        //}
+        [HttpPost]
+        public async Task<ActionResult<PaymentGetDto>> CreatePayment(PaymentPostDto paymentDto)
+        {
+            try
+            {
+                 await _paymentService.CreatePaymentAsync(paymentDto);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while creating the payment.", Error = ex.Message });
+            }
+        }
 
         [HttpPut("{id}")]
         public async Task<ActionResult<PaymentGetDto>> UpdatePayment(Guid id, PaymentUpdateDto paymentDto)
@@ -92,5 +92,19 @@ namespace ECommerceApi.Controllers
                 return StatusCode(500, new { Message = "An error occurred while deleting the payment.", Error = ex.Message });
             }
         }
+        //[HttpPut("change-status")]
+        //public async Task<ActionResult<PaymentGetDto>> ChangePaymentStatus([FromQuery] bool paymentStatus, [FromQuery] string description)
+        //{
+        //    try
+        //    {
+        //        var updatedPayment = await _paymentService.ChangePaymentStatusAndGetPaymentInfo(paymentStatus, description);
+        //        return Ok(updatedPayment);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { Message = "An error occurred while changing the payment status.", Error = ex.Message });
+        //    }
+        //}
+
     }
 }
