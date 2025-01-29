@@ -20,5 +20,7 @@ namespace ECommerceApi.Dtos
 
         [BsonElement("imageUrl")]
         public string? ImageUrl { get; set; }
+        [BsonElement("productUrl")]
+        public string ProductUrl { get; set; }
     }
 }

@@ -26,5 +26,7 @@ namespace ECommerceApi.Dtos
 
         [BsonElement("createdAt")]
         public DateTime CreatedAt { get; set; }
+        [BsonElement("productUrl")]
+        public string ProductUrl { get; set; }
     }
 }
