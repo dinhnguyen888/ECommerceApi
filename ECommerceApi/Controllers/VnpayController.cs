@@ -1,5 +1,6 @@
 ﻿using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
+using ECommerceApi.Models;
 using ECommerceApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,25 +11,29 @@ namespace ECommerceApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class VnpayPaymentController : ControllerBase
+    public class VnpayController : ControllerBase
     {
         private readonly VnpayService _vnpayService;
-        private readonly IPaymentService _paymentService;   
+        private readonly IPaymentService _paymentService;
 
-        public VnpayPaymentController(VnpayService vnpayService, IPaymentService paymentService)
+        public VnpayController(VnpayService vnpayService, IPaymentService paymentService)
         {
             _vnpayService = vnpayService;
             _paymentService = paymentService;
         }
 
         [HttpGet("CreatePaymentUrl")]
-        public ActionResult<string> CreatePaymentUrl([FromQuery]long moneyToPay,[FromBody] PaymentPostDto payment )
+        public async Task<ActionResult<string>> CreatePaymentUrl( [FromQuery] PaymentPostDto payment)
         {
             try
             {
-                var description = _paymentService.ConvertPaymentInfoToDescriptionInVnpay(payment);
-                var ipAddress = NetworkHelper.GetIpAddress(HttpContext); // Lấy địa chỉ IP của thiết bị thực hiện giao dịch
+                
+                var ipAddress = NetworkHelper.GetIpAddress(HttpContext); // get IP address of equitment
+                var moneyToPay = payment.ProductPrice;
+                var paymentId = await _paymentService.CreatePaymentAsync(payment);
+                var description = paymentId; //use description to store paymentId
                 var paymentUrl = _vnpayService.CreatePaymentUrl(moneyToPay, description, ipAddress);
+
                 return Created(paymentUrl, paymentUrl);
             }
             catch (Exception ex)
@@ -38,7 +43,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpGet("IpnAction")]
-        public IActionResult IpnAction()
+        public async Task<IActionResult> IpnAction()
         {
             if (Request.QueryString.HasValue)
             {
@@ -47,16 +52,18 @@ namespace ECommerceApi.Controllers
                     var paymentResult = _vnpayService.ProcessPaymentResult(Request.Query);
                     if (paymentResult.IsSuccess)
                     {
-                      
-                        //get a description in paymentResult
-                        string description = paymentResult.PaymentResponse.Description;
+                        //var description = paymentResult.Description;
 
-                        var addToPayment =_paymentService.SplitDescriptionAndCreatePayment(description);
+
+                        //var payment = await _vnpayService.ChangePaymentStatusAndGetPaymentInfo(true, description);
+                        //await _vnpayService.SendEmailUsingPaymentInfo(payment);
+
+                      
 
                         return Ok();
                     }
 
-  
+
                     return BadRequest("Thanh toán thất bại");
                 }
                 catch (Exception ex)
@@ -69,7 +76,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpGet("Callback")]
-        public ActionResult<string> Callback()
+        public async  Task<ActionResult<string>> Callback()
         {
             if (Request.QueryString.HasValue)
             {
@@ -80,7 +87,14 @@ namespace ECommerceApi.Controllers
 
                     if (paymentResult.IsSuccess)
                     {
-                        return Ok(resultDescription);
+                        var description = paymentResult.Description;
+
+                        var paymentId = Convert.ToInt64(description);
+
+                        var payment = await _vnpayService.ChangePaymentStatusAndGetPaymentInfo(true, paymentId);
+                        await _vnpayService.SendEmailUsingPaymentInfo(payment);
+
+                        return Ok(paymentResult);
                     }
 
                     return BadRequest(resultDescription);
