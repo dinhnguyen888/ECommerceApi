@@ -16,7 +16,7 @@ namespace ECommerceApi.Controllers
             _gitHubService = gitHubService;
         }
 
-        [HttpGet("login")]  
+        [HttpGet("login")]
         public IActionResult Login()
         {
             try
@@ -52,11 +52,11 @@ namespace ECommerceApi.Controllers
                 var userData = await _gitHubService.GetGitHubUserData(accessToken);
 
                 //then generate internal JWT token
-                var (systemAccessToken,refreshToken) = await _gitHubService.GenerateTokenForGitHubUser(userData);
+                var (systemAccessToken, refreshToken) = await _gitHubService.GenerateTokenForGitHubUser(userData);
                 return Ok(new
                 {
-                  accessToken = systemAccessToken,
-                  refreshToken = refreshToken
+                    accessToken = systemAccessToken,
+                    refreshToken = refreshToken
 
                 });
             }
@@ -70,45 +70,46 @@ namespace ECommerceApi.Controllers
             }
         }
 
-        //[HttpGet("facebook-login")]
-        //public IActionResult FacebookLogin()
-        //{
-        //    try
-        //    {
-        //        var properties = new AuthenticationProperties
-        //        {
-        //            RedirectUri = Url.Action("FacebookCallback", "OAuth"),
-        //            Items = { { "scheme", "Facebook" } }
-        //        };
+        [HttpGet("facebook-login")]
+        public IActionResult FacebookLogin()
+        {
+            try
+            {
+                var properties = new AuthenticationProperties
+                {
+                    RedirectUri = Url.Action("FacebookCallback", "OAuth"),
+                    Items = { { "scheme", "Facebook" } }
+                };
 
-        //        if (string.IsNullOrEmpty(properties.RedirectUri))
-        //        {
-        //            return BadRequest("Redirect URI is missing or invalid.");
-        //        }
+                if (string.IsNullOrEmpty(properties.RedirectUri))
+                {
+                    return BadRequest("Redirect URI is missing or invalid.");
+                }
 
-        //        return Challenge(properties, "Facebook");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { Message = "An error occurred during login.", Error = ex.Message });
-        //    }
-        //}
+                return Challenge(properties, "Facebook");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred during login.", Error = ex.Message });
+            }
+        }
 
-        //[HttpGet("signin-facebook")]
-        //public async Task<IActionResult> FacebookCallback()
-        //{
-        //    var result = await HttpContext.AuthenticateAsync("Facebook");
-        //    if (!result.Succeeded)
-        //    {
-        //        return BadRequest("Error during Facebook authentication.");
-        //    }
+        [HttpGet("facebook-callback")]
+        public async Task<IActionResult> FacebookCallback()
+        {
+            var result = await HttpContext.AuthenticateAsync("Facebook");
+            if (!result.Succeeded)
+            {
+                return BadRequest("Error during Facebook authentication.");
+            }
 
-        //    // Process the authentication result
-        //    var claims = result.Principal.Identities.FirstOrDefault()?.Claims;
-        //    // Your logic to handle the authenticated user
+            // Process the authentication result
+            var claims = result.Principal.Identities.FirstOrDefault()?.Claims;
+            // Your logic to handle the authenticated user
 
-        //    return Ok("Facebook login successful.");
-        //}
+            return Ok("Facebook login successful.");
+        }
+    
 
-    }
+}
 }
