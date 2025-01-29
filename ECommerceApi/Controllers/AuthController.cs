@@ -55,6 +55,10 @@ namespace ECommerceApi.Controllers
 
                 return Ok(new { AccessToken = (accessToken), RefreshToken = (refeshToken) });
             }
+            catch(UnauthorizedAccessException ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred during login.");

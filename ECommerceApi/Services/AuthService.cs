@@ -108,7 +108,7 @@ namespace ECommerceApi.Services
             //add condition to check if account is null or password is not correct or role is not admin
             if (account == null || !_passwordHelper.VerifyPassword(password, account.Password) || account.Role.RoleName != roleName)
             {
-                throw new UnauthorizedAccessException("Invalid username or password.");
+                throw new UnauthorizedAccessException("Invalid username or password or roleName not have permission in this feature.");
             }
             var inputPara = _mapper.Map<TokenGenerateDto>(account);
             var accessToken = _tokenService.GenerateToken(inputPara);
