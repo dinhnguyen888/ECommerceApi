@@ -77,9 +77,9 @@ builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Register Helpers and Services
-builder.Services.AddTransient<PasswordHelper>();
+builder.Services.AddSingleton<PasswordHelper>(); // Hoặc Transient nếu cần
 
-builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddSingleton<IProductService, ProductService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -89,10 +89,12 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IGitHubService, GitHubService>();
 builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddScoped<VnpayService>();
-builder.Services.AddSingleton<EmailService>();
+builder.Services.AddScoped<VnpayService>(); // Đổi từ Transient -> Scoped
+builder.Services.AddTransient<IEmailService, EmailService>(); // Đổi từ Transient để tránh xung đột
 builder.Services.AddScoped<IPaymentService, PaymentService>();
-builder.Services.AddTransient<IEmailService, EmailService>();
+
+//builder.Services.AddSingleton<IVnpay, Vnpay>();
+
 //builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
 
@@ -159,16 +161,35 @@ builder.Services.AddAuthentication(options =>
 }
 
 )
-.AddFacebook(options =>
+.AddFacebook(facebookOptions =>
 {
-    options.AppId = builder.Configuration["Facebook:ClientId"];
-    options.AppSecret = builder.Configuration["Facebook:ClientSecret"];
-    options.CallbackPath = new PathString("/signin-facebook");
-    options.SaveTokens = true;
-    options.Scope.Add("email");
-    options.Fields.Add( "email");
-});
+    facebookOptions.AppId = builder.Configuration["Facebook:AppId"];
+    facebookOptions.AppSecret = builder.Configuration["Facebook:AppSecret"];
+    facebookOptions.CallbackPath = "/callback/facebook";
+    facebookOptions.SaveTokens = true;
+    facebookOptions.Events.OnRedirectToAuthorizationEndpoint = (redirectContext) =>
+    {
+        Console.WriteLine(redirectContext.RedirectUri);
+        redirectContext.Response.Redirect(redirectContext.RedirectUri);
+        return Task.CompletedTask;
+    };
+    facebookOptions.Events.OnTicketReceived = (context) =>
+    {
+        Console.WriteLine(context.HttpContext.User);
+        return Task.CompletedTask;
+    };
+    facebookOptions.Events.OnCreatingTicket = (context) =>
+    {
+        Console.WriteLine(context.Identity);
+        return Task.CompletedTask;
+    };
+    facebookOptions.Events.OnAccessDenied = (context) =>
+    {
+        Console.WriteLine(context.HttpContext.User);
+        return Task.CompletedTask;
+    };
 
+});
 
 // Build the app
 var app = builder.Build();
