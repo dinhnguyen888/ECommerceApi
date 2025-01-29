@@ -101,6 +101,10 @@ public class ProductService : IProductService
         return _mapper.Map<List<ProductGetDto>>(products);
     }
 
-
+    public async Task<string> GetProductUrlByIdAsync(string productId)
+    {
+        var product = await _productCollection.Find(p => p.Id == productId).FirstOrDefaultAsync();
+        return product?.ProductUrl ?? string.Empty; 
+    }
 
 }

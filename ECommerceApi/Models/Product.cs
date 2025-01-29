@@ -35,6 +35,8 @@ namespace ECommerceApi.Models
 
         [BsonElement("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [BsonElement("productUrl")]
+        public string ProductUrl { get; set; } // for store an project or tool in google 
     }
 
 }

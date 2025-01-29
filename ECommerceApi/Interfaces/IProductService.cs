@@ -12,6 +12,7 @@ public interface IProductService
     Task<List<ProductGetDto>> GetRelatedProduct();
     Task<List<ProductGetDto>> GetProductsByTagAsync(string tag);
     Task<List<ProductGetDto>> SearchProductsAsync(string keyword);
-
+    Task<string> GetProductUrlByIdAsync(string productId);
+    
 
 }
