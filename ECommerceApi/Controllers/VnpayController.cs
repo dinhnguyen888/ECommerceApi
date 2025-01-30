@@ -83,7 +83,8 @@ namespace ECommerceApi.Controllers
                 try
                 {
                     var paymentResult = _vnpayService.ProcessPaymentResult(Request.Query);
-                    var resultDescription = $"{paymentResult.PaymentResponse.Description}. {paymentResult.TransactionStatus.Description}.";
+                    var result = "Bạn có thể tắt trang này được rồi!";
+                    var resultDescription = $"{paymentResult.PaymentResponse.Description}, {result}.";
 
                     if (paymentResult.IsSuccess)
                     {
@@ -94,7 +95,7 @@ namespace ECommerceApi.Controllers
                         var payment = await _vnpayService.ChangePaymentStatusAndGetPaymentInfo(true, paymentId);
                         await _vnpayService.SendEmailUsingPaymentInfo(payment);
 
-                        return Ok(paymentResult);
+                        return Ok(resultDescription);
                     }
 
                     return BadRequest(resultDescription);
