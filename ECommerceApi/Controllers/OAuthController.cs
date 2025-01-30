@@ -10,10 +10,12 @@ namespace ECommerceApi.Controllers
     public class OAuthController : Controller
     {
         private readonly IGitHubService _gitHubService;
+        private readonly IConfiguration _configuration;
 
-        public OAuthController(IGitHubService gitHubService)
+        public OAuthController(IGitHubService gitHubService, IConfiguration configuration)
         {
             _gitHubService = gitHubService;
+            _configuration = configuration;
         }
 
         [HttpGet("login")]
@@ -53,12 +55,10 @@ namespace ECommerceApi.Controllers
 
                 //then generate internal JWT token
                 var (systemAccessToken, refreshToken) = await _gitHubService.GenerateTokenForGitHubUser(userData);
-                return Ok(new
-                {
-                    accessToken = systemAccessToken,
-                    refreshToken = refreshToken
-
-                });
+               
+                var frontendUrl  = _configuration["URL:FrontendUrl"];
+                // return a URL with the token
+                return Redirect($"{frontendUrl}/callback?accessToken={systemAccessToken}&refreshToken={refreshToken}");
             }
             catch (Exception ex)
             {
