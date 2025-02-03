@@ -12,8 +12,9 @@ namespace ECommerceApi.Interfaces
         Task<bool> DeletePaymentAsync(int id);
 
         Task<bool> DeletePendingPaymentAsync();
-        //Task<PaymentGetDto> ChangePaymentStatusAndGetPaymentInfo(bool paymentStatus, string description);
-        //Task SendEmailUsingPaymentInfo(PaymentGetDto paymentResult);
-        
+        Task<PaymentGetDto> ChangePaymentStatusAndGetPaymentInfo(bool paymentStatus, long description);
+        Task SendEmailUsingPaymentInfo(PaymentGetDto paymentResult);
+
+
     }
 }

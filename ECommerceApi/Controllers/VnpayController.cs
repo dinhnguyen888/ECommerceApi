@@ -52,15 +52,14 @@ namespace ECommerceApi.Controllers
                     var paymentResult = _vnpayService.ProcessPaymentResult(Request.Query);
                     if (paymentResult.IsSuccess)
                     {
-                        //var description = paymentResult.Description;
+                        var description = paymentResult.Description;
 
+                        var paymentId = Convert.ToInt64(description);
 
-                        //var payment = await _vnpayService.ChangePaymentStatusAndGetPaymentInfo(true, description);
-                        //await _vnpayService.SendEmailUsingPaymentInfo(payment);
+                        var payment = await _paymentService.ChangePaymentStatusAndGetPaymentInfo(true, paymentId);
+                        await _paymentService.SendEmailUsingPaymentInfo(payment);
 
-                      
-
-                        return Ok();
+                        return Redirect("/api/Vnpay/Callback"); // will change to frontend URL in the future
                     }
 
 
@@ -88,12 +87,7 @@ namespace ECommerceApi.Controllers
 
                     if (paymentResult.IsSuccess)
                     {
-                        var description = paymentResult.Description;
-
-                        var paymentId = Convert.ToInt64(description);
-
-                        var payment = await _vnpayService.ChangePaymentStatusAndGetPaymentInfo(true, paymentId);
-                        await _vnpayService.SendEmailUsingPaymentInfo(payment);
+                      
 
                         return Ok(resultDescription);
                     }
