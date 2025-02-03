@@ -1,5 +1,6 @@
 ﻿using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -68,7 +69,29 @@ public class ProductsController : ControllerBase
         }
     }
 
+    [HttpGet("for-update-product/{id}")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetProductForUpdating(string id)
+    {
+        try
+        {
+            var product = await _productService.GetProductForUpdating(id);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(product);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while fetching the product.", error = ex.Message });
+        }
+    }
+
     [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> AddProduct(ProductPostDto product)
     {
         try
@@ -83,6 +106,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> UpdateProduct(string id, ProductUpdateDto updatedProduct)
     {
         try
@@ -103,6 +127,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> DeleteProduct(string id)
     {
         try

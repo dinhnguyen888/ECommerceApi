@@ -1,6 +1,7 @@
 ﻿using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
 using ECommerceApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerceApi.Controllers
@@ -46,6 +47,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> CreateCategory(CategoryPostDto categoryDto)
         {
             try
@@ -60,6 +62,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateCategory(string id, CategoryUpdateDto categoryDto)
         {
             try
@@ -75,6 +78,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteCategory(string id)
         {
             try

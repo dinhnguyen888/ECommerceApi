@@ -3,6 +3,7 @@ using ECommerceApi.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ECommerceApi.Controllers
 {
@@ -18,6 +19,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetAllAccounts()
         {
             var accounts = await _accountService.GetAllAccountsAsync();
@@ -25,6 +27,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetAccountById(Guid id)
         {
             var account = await _accountService.GetAccountByIdAsync(id);
@@ -40,6 +43,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> CreateAccount([FromBody] AccountPostDto accountDto)
         {
             var account = await _accountService.CreateAccountAsync(accountDto);
@@ -47,6 +51,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateAccount(Guid id, [FromBody] AccountUpdateDto accountDto)
         {
             var updatedAccount = await _accountService.UpdateAccountAsync(id, accountDto);
@@ -55,6 +60,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteAccount(Guid id)
         {
             var result = await _accountService.DeleteAccountAsync(id);

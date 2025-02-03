@@ -1,6 +1,7 @@
 ﻿using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
 using ECommerceApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerceApi.Controllers
@@ -31,6 +32,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> AddBanner([FromBody] BannerPostDto banner)
         {
             try
@@ -50,6 +52,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateBanner(string id, [FromBody] BannerUpdateDto banner)
         {
             try
@@ -74,6 +77,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteBanner(string id)
         {
             try

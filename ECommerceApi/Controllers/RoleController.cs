@@ -1,13 +1,16 @@
 ﻿using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 
 namespace ECommerceApi.Controllers
 {
+
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Policy = "AdminOnly")]
     public class RoleController : ControllerBase
     {
         private readonly IRoleService _roleService;

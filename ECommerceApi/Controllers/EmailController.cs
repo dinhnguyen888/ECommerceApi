@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerceApi.Controllers
@@ -12,7 +13,7 @@ namespace ECommerceApi.Controllers
         {
             _emailService = emailService;
         }
-
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost("SendEmail")]
         public async Task<IActionResult> SendEmail(string toEmail, string subject, string body)
         {

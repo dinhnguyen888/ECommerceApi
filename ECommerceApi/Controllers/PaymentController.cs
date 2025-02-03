@@ -1,5 +1,6 @@
 using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<ActionResult<IEnumerable<PaymentGetDto>>> GetAllPayments()
         {
             try
@@ -47,6 +49,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<ActionResult<PaymentGetDto>> CreatePayment(PaymentPostDto paymentDto)
         {
             try
@@ -61,6 +64,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<ActionResult<PaymentGetDto>> UpdatePayment(Guid id, PaymentUpdateDto paymentDto)
         {
             try
@@ -75,7 +79,8 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeletePayment(Guid id)
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<ActionResult> DeletePayment(int id)
         {
             try
             {
@@ -92,19 +97,17 @@ namespace ECommerceApi.Controllers
                 return StatusCode(500, new { Message = "An error occurred while deleting the payment.", Error = ex.Message });
             }
         }
-        //[HttpPut("change-status")]
-        //public async Task<ActionResult<PaymentGetDto>> ChangePaymentStatus([FromQuery] bool paymentStatus, [FromQuery] string description)
-        //{
-        //    try
-        //    {
-        //        var updatedPayment = await _paymentService.ChangePaymentStatusAndGetPaymentInfo(paymentStatus, description);
-        //        return Ok(updatedPayment);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { Message = "An error occurred while changing the payment status.", Error = ex.Message });
-        //    }
-        //}
+        [HttpDelete("pending-payment")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> DeletePendingPayment()
+        {
+           var result = await _paymentService.DeletePendingPaymentAsync();
+            if (!result)
+            {
+                return NotFound(new { Message = "Payment not found." });
+            }
+            return NoContent();
+        }
 
     }
 }
