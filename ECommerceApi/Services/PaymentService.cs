@@ -66,9 +66,9 @@ namespace ECommerceApi.Services
             return _mapper.Map<PaymentGetDto>(payment);
         }
 
-        public async Task<bool> DeletePaymentAsync(Guid id)
+        public async Task<bool> DeletePaymentAsync(int id)
         {
-            var payment = await _context.Payments.FindAsync(id);
+            var payment = await _context.Payments.FirstOrDefaultAsync(p => p.Id == id);
             if (payment == null)
             {
                 return false;
@@ -80,5 +80,16 @@ namespace ECommerceApi.Services
             return true;
         }
 
+        public async Task<bool> DeletePendingPaymentAsync()
+        {
+            var payments = await _context.Payments.Where(p => p.PaymentStatus == false).ToListAsync();
+            if (payments.Count == 0)
+            {
+                return false;
+            }
+            _context.Payments.RemoveRange(payments);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

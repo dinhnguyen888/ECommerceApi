@@ -9,7 +9,9 @@ namespace ECommerceApi.Interfaces
         Task<IEnumerable<PaymentGetDto>> GetPaymentsByAccountIdAsync(Guid accountId);
         Task<string> CreatePaymentAsync(PaymentPostDto payment);
         Task<PaymentGetDto> UpdatePaymentAsync(Guid id, PaymentUpdateDto payment);
-        Task<bool> DeletePaymentAsync(Guid id);
+        Task<bool> DeletePaymentAsync(int id);
+
+        Task<bool> DeletePendingPaymentAsync();
         //Task<PaymentGetDto> ChangePaymentStatusAndGetPaymentInfo(bool paymentStatus, string description);
         //Task SendEmailUsingPaymentInfo(PaymentGetDto paymentResult);
         
