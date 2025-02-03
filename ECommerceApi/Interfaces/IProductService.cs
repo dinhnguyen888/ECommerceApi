@@ -1,4 +1,5 @@
 ﻿using ECommerceApi.Dtos;
+using ECommerceApi.Models;
 
 public interface IProductService
 {
@@ -14,5 +15,5 @@ public interface IProductService
     Task<List<ProductGetDto>> SearchProductsAsync(string keyword);
     Task<string> GetProductUrlByIdAsync(string productId);
     
-
+    Task<Product> GetProductForUpdating(string id);
 }
