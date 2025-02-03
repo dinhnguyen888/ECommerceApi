@@ -92,7 +92,14 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<VnpayService>(); // Đổi từ Transient -> Scoped
 builder.Services.AddTransient<IEmailService, EmailService>(); // Đổi từ Transient để tránh xung đột
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<MomoService>();
 
+//builder.Services.AddSingleton(new MomoService(
+//        builder.Configuration["MoMo:PartnerCode"],
+//         builder.Configuration["MoMo:AccessKey"],
+//        builder.Configuration["MoMo:SecretKey"],
+//         builder.Configuration["MoMo:Endpoint"]
+//    ));
 //builder.Services.AddSingleton<IVnpay, Vnpay>();
 
 //builder.Services.AddScoped<IUserProfileService, UserProfileService>();
