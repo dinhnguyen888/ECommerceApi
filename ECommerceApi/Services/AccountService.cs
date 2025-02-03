@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ECommerceApi.Helpers;
+using Microsoft.IdentityModel.Tokens;
 namespace ECommerceApi.Services
 {
     public class AccountService : IAccountService
@@ -15,13 +16,15 @@ namespace ECommerceApi.Services
         private readonly IMapper _mapper;
         private readonly PasswordHelper _passwordHelper;
         private readonly ITokenService _tokenService;
+        private readonly ICartService cartService;
 
-        public AccountService(AppDbContext context, IMapper mapper, PasswordHelper passwordHelper, ITokenService tokenService)
+        public AccountService(AppDbContext context, IMapper mapper, PasswordHelper passwordHelper, ITokenService tokenService, ICartService cartService)
         {
             _context = context;
             _mapper = mapper;
             _passwordHelper = passwordHelper;
             _tokenService = tokenService;
+            this.cartService = cartService;
         }
 
         public async Task<IEnumerable<AccountGetDto>> GetAllAccountsAsync()
@@ -45,6 +48,7 @@ namespace ECommerceApi.Services
             if (checkRole == null) throw new ArgumentException("Role can not found");
             var account = _mapper.Map<Account>(accountDto);
             account.Id = Guid.NewGuid();
+            if (accountDto.Password.IsNullOrEmpty()) account.Password = "Abc123@";
             account.Password = _passwordHelper.HashPassword(accountDto.Password); 
             _context.Set<Account>().Add(account);
             await _context.SaveChangesAsync();
@@ -68,6 +72,7 @@ namespace ECommerceApi.Services
             if (account == null) return false;
 
             _context.Set<Account>().Remove(account);
+            var deletedCart = cartService.ClearCart(account.Id.ToString());
             await _context.SaveChangesAsync();
             return true;
         }
