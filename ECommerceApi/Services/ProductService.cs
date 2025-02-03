@@ -107,4 +107,9 @@ public class ProductService : IProductService
         return product?.ProductUrl ?? string.Empty; 
     }
 
+    public async Task<Product> GetProductForUpdating(string id)
+    {
+        var product = await _productCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
+        return product;
+    }
 }
