@@ -24,8 +24,8 @@ public class MomoService
         PartnerCode = _configuration["Momo:PartnerCode"];
         AccessKey = _configuration["Momo:AccessKey"];
         SecretKey = _configuration["Momo:SecretKey"];
-        RedirectUrl = _configuration["Momo:RedirectUrl"];
-        IpnUrl = _configuration["Momo:IpnUrl"];
+        RedirectUrl = _configuration["URL:FrontendUrlPaymentCallback"];
+        IpnUrl = _configuration["Momo:NotifyUrl"];
 
     }
     public async Task<string> CreatePaymentRequestAsync(long amount, string description, string orderIdInput)
@@ -36,12 +36,13 @@ public class MomoService
         string orderInfo = description;
         string requestType = "payWithATM";
         string extraData = "";
-
+        Console.WriteLine(IpnUrl);
         // rawhash for create signature
         string rawHash = $"accessKey={AccessKey}&amount={amount}&extraData={extraData}&ipnUrl={IpnUrl}" +
                          $"&orderId={orderId}&orderInfo={orderInfo}&partnerCode={PartnerCode}" +
                          $"&redirectUrl={RedirectUrl}&requestId={requestId}&requestType={requestType}";
 
+        
         // create signature HMAC SHA256
         string signature = CreateSignature(rawHash, SecretKey);
 
@@ -79,7 +80,7 @@ public class MomoService
         return null;
     }
 
-    private string CreateSignature(string data, string key)
+    public string CreateSignature(string data, string key)
     {
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));
         byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));

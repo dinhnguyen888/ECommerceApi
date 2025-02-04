@@ -13,15 +13,17 @@ public class MomoController : ControllerBase
     private readonly MomoService _momoService;
     private readonly IPaymentService _paymentService;
     private readonly ILogger<MomoController> _logger;
+    private readonly IConfiguration _configuration;
 
-    public MomoController(MomoService momoService, IPaymentService paymentService, ILogger<MomoController> logger)
+    public MomoController(MomoService momoService, IPaymentService paymentService, ILogger<MomoController> logger, IConfiguration configuration)
     {
         _momoService = momoService;
         _paymentService = paymentService;
         _logger = logger;
+        _configuration = configuration;
     }
 
-    [HttpPost("create-payment")]
+    [HttpGet("create-payment")]
     public async Task<IActionResult> CreatePayment([FromQuery] PaymentPostDto request)
     {
         try
@@ -34,7 +36,7 @@ public class MomoController : ControllerBase
             var payUrl = await _momoService.CreatePaymentRequestAsync(amount, description, orderId);
             if (!string.IsNullOrEmpty(payUrl))
             {
-                return Ok(new { payUrl });
+                return Ok(payUrl);
             }
 
             return BadRequest("Failed to create a payment request.");
@@ -45,28 +47,46 @@ public class MomoController : ControllerBase
             return StatusCode(500, "An error occurred while processing the payment request.");
         }
     }
-
-    [HttpPost("ipn")]
-    public async Task<IActionResult> IpnAction([FromBody] MomoIpnDto ipnRequest)
+    [HttpPost("ipn")] 
+    public async Task<IActionResult> IpnAction([FromBody] MomoIpnRequest request)
     {
         try
         {
-            if (ipnRequest == null)
+            if (request == null || string.IsNullOrEmpty(request.OrderId))
             {
-                return BadRequest("Invalid request data.");
+                return BadRequest(new { message = "Invalid request data." });
             }
 
-            var paymentId = Convert.ToInt64(ipnRequest.OrderId);
+            // Validate the signature
+            //string secretKey = _configuration["Momo:SecretKey"];
+            //string rawData = $"{request.PartnerCode}{request.OrderId}{request.RequestId}{request.Amount}{request.OrderInfo}{request.OrderType}{request.TransId}{request.ResultCode}{request.Message}{request.PayType}{request.ResponseTime}{request.ExtraData}";
+            ////string calculatedSignature = _momoService.CreateSignature(rawData, secretKey);
 
-            var payment = await _paymentService.ChangePaymentStatusAndGetPaymentInfo(true, paymentId);
+            //if (request.Signature != calculatedSignature)
+            //{
+            //    _logger.LogWarning("Invalid signature for Momo IPN request.");
+            //    return BadRequest(new { message = "Invalid signature." });
+            //}
+
+            var payment = await _paymentService.ChangePaymentStatusAndGetPaymentInfo(request.ResultCode == 0, long.Parse(request.OrderId));
+            if (payment == null)
+            {
+                return NotFound(new { message = "Payment not found." });
+            }
+
             await _paymentService.SendEmailUsingPaymentInfo(payment);
 
-            return Ok();
+            // Trả về phản hồi chuẩn của MoMo
+            return Ok(
+          );
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while processing Momo IPN.");
-            return StatusCode(500, "An error occurred while processing the IPN request.");
+            return StatusCode(500, new { message = "An error occurred while processing the IPN request." });
         }
     }
+
 }
+
+
