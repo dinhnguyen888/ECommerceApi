@@ -15,11 +15,13 @@ namespace ECommerceApi.Controllers
     {
         private readonly VnpayService _vnpayService;
         private readonly IPaymentService _paymentService;
+        private readonly IConfiguration _configuration;
 
-        public VnpayController(VnpayService vnpayService, IPaymentService paymentService)
+        public VnpayController(VnpayService vnpayService, IPaymentService paymentService, IConfiguration configuration)
         {
             _vnpayService = vnpayService;
             _paymentService = paymentService;
+            _configuration = configuration;
         }
 
         [HttpGet("CreatePaymentUrl")]
@@ -89,7 +91,7 @@ namespace ECommerceApi.Controllers
                     {
                       
 
-                        return Ok(resultDescription);
+                        return Redirect(_configuration["URL:FrontendUrlPaymentCallback"]);
                     }
 
                     return BadRequest(resultDescription);
