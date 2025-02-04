@@ -1,25 +1,24 @@
-# Use the official .NET 6 SDK image for building
+﻿# Sử dụng .NET 8 SDK để build ứng dụng
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copy .csproj and restore dependencies
+# Copy file dự án và restore dependencies
 COPY *.csproj ./
 RUN dotnet restore
 
-# Copy the rest of the application and build
+# Copy toàn bộ source code và build
 COPY . ./
-RUN dotnet publish -c Release -o out
+RUN dotnet publish -c Release -o /out
 
-# Use a lightweight .NET 6 runtime image for running
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
+# Image runtime chỉ chứa .NET Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /app/out .
 
-# Set environment variables for the app
-ENV ASPNETCORE_URLS=http://+:7202
+# Copy file đã build từ bước trước
+COPY --from=build /out ./
 
-# Expose port 5000
-EXPOSE 5000
+# Expose port 7202 để truy cập từ bên ngoài
+EXPOSE 7202
 
-# Run the application
+# Chạy ứng dụng
 ENTRYPOINT ["dotnet", "ECommerceApi.dll"]
