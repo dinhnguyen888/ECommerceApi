@@ -1,4 +1,4 @@
-version: '3.8'
+﻿version: '3.8'
 
 services:
   mysql:
@@ -6,25 +6,32 @@ services:
     container_name: mysql_container
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ROOT_PASSWORD: "saaS@nguyenphucdinh"
       MYSQL_DATABASE: E-commerce-database
-      MYSQL_USER: root
-      MYSQL_PASSWORD: ""
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
 
   app:
     build: .
     container_name: ecommerce_app
     restart: always
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+    environment:
+      - DOTNET_RUNNING_IN_CONTAINER=true
     volumes:
       - /home/user/appsettings.json:/app/appsettings.json
     ports:
       - "7202:7202"
+    command: ["sh", "-c", "dotnet ECommerceApi.dll"]
 
   nginx:
     image: nginx:latest
@@ -33,7 +40,7 @@ services:
     depends_on:
       - app
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - /home/user/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
       - "80:80"
 
