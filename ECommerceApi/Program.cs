@@ -204,8 +204,19 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("Admin"));
 });
 
+
 // Build the app
+//builder.WebHost.UseUrls("http://*:7202");
 var app = builder.Build();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+    var services = scope.ServiceProvider;
+    DbInitializer.Initialize(services);
+}
 
 // Middleware setup
 app.UseSwagger();
