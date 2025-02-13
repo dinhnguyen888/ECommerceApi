@@ -42,18 +42,41 @@ namespace ECommerceApi.Services
 
         public async Task<AccountGetDto> CreateAccountAsync(AccountPostDto accountDto)
         {
-            var checkRole = await _context.Roles.SingleOrDefaultAsync(r => r.Id == accountDto.RoleId);
+            var role = await _context.Roles.SingleOrDefaultAsync(r => r.RoleName == "User");
 
-            //check Role
-            if (checkRole == null) throw new ArgumentException("Role can not found");
+            if (role == null)
+            {
+                role = new Role {  RoleName = "User" };
+                _context.Roles.Add(role);
+                await _context.SaveChangesAsync();
+            }
+
             var account = _mapper.Map<Account>(accountDto);
             account.Id = Guid.NewGuid();
-            if (accountDto.Password.IsNullOrEmpty()) account.Password = "Abc123@";
-            account.Password = _passwordHelper.HashPassword(accountDto.Password); 
-            _context.Set<Account>().Add(account);
-            await _context.SaveChangesAsync();
+            account.RoleId = role.Id;
+
+            // Process default password
+            var rawPassword = accountDto.Password.IsNullOrEmpty() ? "Abc123@" : accountDto.Password;
+            account.Password = _passwordHelper.HashPassword(rawPassword);
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    _context.Set<Account>().Add(account);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+
             return _mapper.Map<AccountGetDto>(account);
         }
+
 
         public async Task<AccountGetDto> UpdateAccountAsync(Guid id, AccountUpdateDto accountDto)
         {

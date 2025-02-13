@@ -102,7 +102,7 @@ namespace ECommerceApi.Services
                     Email = userEmail,
                     Name = userName,
                     Password = "Abc123@",
-                    RoleId = roleId
+                  
                 };
                 var createdAccount = await _accountService.CreateAccountAsync(newAccount);
                  account = new AccountGetForTokenGithub
