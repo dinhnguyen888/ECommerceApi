@@ -1,5 +1,8 @@
-﻿using ECommerceApi.Interfaces;
+﻿using ECommerceApi.Dtos;
+using ECommerceApi.Interfaces;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -70,5 +73,26 @@ namespace ECommerceApi.Controllers
             }
         }
 
-}
+        [HttpGet("login-google")]
+        public IActionResult LoginWithGoogle(GoogleRequestDto googleDto)
+        {
+           try
+            {
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred during login.", Error = ex.Message });
+            }
+        }
+
+
+        [HttpGet("google-callback")]
+        public async Task<IActionResult> FacebookCallback()
+        {
+
+            return Ok();
+        }
+
+    }
 }
