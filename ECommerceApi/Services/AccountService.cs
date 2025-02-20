@@ -17,14 +17,16 @@ namespace ECommerceApi.Services
         private readonly PasswordHelper _passwordHelper;
         private readonly ITokenService _tokenService;
         private readonly ICartService cartService;
+        private readonly IConfiguration _configuration;
 
-        public AccountService(AppDbContext context, IMapper mapper, PasswordHelper passwordHelper, ITokenService tokenService, ICartService cartService)
+        public AccountService(AppDbContext context, IMapper mapper, PasswordHelper passwordHelper, ITokenService tokenService, ICartService cartService, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
             _passwordHelper = passwordHelper;
             _tokenService = tokenService;
             this.cartService = cartService;
+            _configuration = configuration;
         }
 
         public async Task<IEnumerable<AccountGetDto>> GetAllAccountsAsync()
@@ -54,9 +56,10 @@ namespace ECommerceApi.Services
             var account = _mapper.Map<Account>(accountDto);
             account.Id = Guid.NewGuid();
             account.RoleId = role.Id;
+            var defaultPassword = _configuration["DefaultPassword:User"];
 
             // Process default password
-            var rawPassword = accountDto.Password.IsNullOrEmpty() ? "Abc123@" : accountDto.Password;
+            var rawPassword = accountDto.Password.IsNullOrEmpty() ? defaultPassword : accountDto.Password;
             account.Password = _passwordHelper.HashPassword(rawPassword);
 
             using (var transaction = await _context.Database.BeginTransactionAsync())
@@ -81,7 +84,8 @@ namespace ECommerceApi.Services
         public async Task<AccountGetDto> UpdateAccountAsync(Guid id, AccountUpdateDto accountDto)
         {
             var account = await _context.Set<Account>().FirstOrDefaultAsync(a => a.Id == id);
-            if (account == null) return null;
+            if (account == null) throw new Exception("account not found");
+
 
             _mapper.Map(accountDto, account);
             _context.Set<Account>().Update(account);
