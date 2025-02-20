@@ -2,16 +2,15 @@
 using ECommerceApi.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace ECommerceApi.Interfaces
 {
     public interface ICommentService
     {
-        Task<IEnumerable<CommentGetDto>> GetCommentsByPageIdAsync(string pageId);
-        Task<CommentGetDto> GetCommentByIdAsync(string id);
-        Task<Comment> CreateCommentAsync(CommentPostDto comment);
-        Task<Comment> UpdateCommentAsync(string id, CommentUpdateDto comment);
+        Task<IEnumerable<Comment>> GetAllCommentsAsync(int pageNumber, int pageSize);
+        Task<IEnumerable<Comment>> GetCommentsByPageIdAsync(string pageId, int pageNumber, int pageSize);
+        Task<Comment> PostCommentAsync(CommentPostDto commentDto);
+        Task<Comment> ReplyCommentAsync(CommentReplyDto replyDto);
         Task<bool> DeleteCommentAsync(string id);
     }
 }

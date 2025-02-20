@@ -18,35 +18,41 @@ namespace ECommerceApi.Controllers
             _commentService = commentService;
         }
 
-        [HttpGet("page/{pageId}")]
-        public async Task<IActionResult> GetCommentsByPageId(string pageId)
+        // Get all comments with pagination
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllComments([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var comments = await _commentService.GetCommentsByPageIdAsync(pageId);
+            var comments = await _commentService.GetAllCommentsAsync(pageNumber, pageSize);
             return Ok(comments);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetCommentById(string id)
+        [HttpGet("page/{pageId}")]
+        public async Task<IActionResult> GetCommentsByPageId(string pageId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var comment = await _commentService.GetCommentByIdAsync(id);
-            if (comment == null) return NotFound();
-            return Ok(comment);
+            var comments = await _commentService.GetCommentsByPageIdAsync(pageId, pageNumber, pageSize);
+            return Ok(comments);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateComment([FromBody] CommentPostDto commentDto)
+        public async Task<IActionResult> PostComment([FromBody] CommentPostDto commentDto)
         {
-            var createdComment = await _commentService.CreateCommentAsync(commentDto);
-            return CreatedAtAction(nameof(GetCommentById), new { id = createdComment.Id }, createdComment);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var createdComment = await _commentService.PostCommentAsync(commentDto);
+            return CreatedAtAction(nameof(GetCommentsByPageId), new { pageId = createdComment.PageId }, createdComment);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateComment(string id, [FromBody] CommentUpdateDto commentDto)
+        [HttpPost("reply")]
+        public async Task<IActionResult> ReplyComment([FromBody] CommentReplyDto replyDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var updatedComment = await _commentService.UpdateCommentAsync(id, commentDto);
-            if (updatedComment == null) return NotFound();
-            return Ok(updatedComment);
+            var reply = await _commentService.ReplyCommentAsync(replyDto);
+            if (reply == null) return NotFound(new { Message = "Parent comment not found" });
+
+            return Ok(reply);
         }
 
         [HttpDelete("{id}")]
