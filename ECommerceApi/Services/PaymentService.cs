@@ -92,14 +92,12 @@ namespace ECommerceApi.Services
             return true;
         }
 
-        public async Task<PaymentGetDto> ChangePaymentStatusAndGetPaymentInfo(bool paymentStatus, long description)
+        public async Task<PaymentGetDto> ChangePaymentStatusAndGetPaymentInfo(bool paymentStatus, long paymentId)
         {
-            //assign paymentId from description
-            long paymentId = description;
-
+           
             // get payment
             var payment = await _context.Payments.SingleOrDefaultAsync(p => p.Id == paymentId);
-            if (payment == null) throw new Exception("Payment not found");
+            if (payment == null) throw new ArgumentNullException("Payment not found");
 
             //Update payment status
             payment.PaymentStatus = paymentStatus;
