@@ -16,17 +16,27 @@ public class MomoService
     private readonly string RedirectUrl;
     private readonly string IpnUrl;
     private readonly IConfiguration _configuration;
-    public MomoService( IConfiguration configuration)
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    public MomoService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
     {
-     
-        _configuration = configuration;
-        Endpoint = _configuration["Momo:Endpoint"];
-        PartnerCode = _configuration["Momo:PartnerCode"];
-        AccessKey = _configuration["Momo:AccessKey"];
-        SecretKey = _configuration["Momo:SecretKey"];
-        RedirectUrl = _configuration["URL:FrontendUrlPaymentCallback"];
-        IpnUrl = _configuration["Momo:NotifyUrl"];
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
 
+        // Lấy cấu hình
+        Endpoint = _configuration.GetValue<string>("Momo:Endpoint");
+        PartnerCode = _configuration.GetValue<string>("Momo:PartnerCode");
+        AccessKey = _configuration.GetValue<string>("Momo:AccessKey");
+        SecretKey = _configuration.GetValue<string>("Momo:SecretKey");
+        RedirectUrl = _configuration.GetValue<string>("URL:FrontendUrlPaymentCallback");
+
+        // Lấy thông tin từ HttpContext
+        var baseRequest = _httpContextAccessor.HttpContext?.Request
+                          ?? throw new InvalidOperationException("HttpContext or Request is null");
+
+        // Tạo IpnUrl an toàn hơn
+        var scheme = baseRequest.Scheme ?? "https";
+        var host = baseRequest.Host.HasValue ? baseRequest.Host.Value : "localhost";
+        IpnUrl = $"{scheme}://{host}/api/Momo/ipn";
     }
     public async Task<string> CreatePaymentRequestAsync(long amount, string description, string orderIdInput)
     {
@@ -42,7 +52,7 @@ public class MomoService
                          $"&orderId={orderId}&orderInfo={orderInfo}&partnerCode={PartnerCode}" +
                          $"&redirectUrl={RedirectUrl}&requestId={requestId}&requestType={requestType}";
 
-        
+
         // create signature HMAC SHA256
         string signature = CreateSignature(rawHash, SecretKey);
 
@@ -86,7 +96,4 @@ public class MomoService
         byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
         return BitConverter.ToString(hash).Replace("-", "").ToLower();
     }
-
-  
-
 }
