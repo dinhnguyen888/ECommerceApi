@@ -15,8 +15,8 @@ namespace ECommerceApi.Controllers
     [ApiController]
     public class PayosController : ControllerBase
     {
-        private readonly PayosService _payOS;
-        public PayosController(PayosService payOS)
+        private readonly IPayosService _payOS;
+        public PayosController(IPayosService payOS)
         {
             _payOS = payOS;
         }

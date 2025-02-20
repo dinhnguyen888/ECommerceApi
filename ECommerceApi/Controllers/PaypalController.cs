@@ -9,11 +9,11 @@ namespace ECommerceApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PaypalController : Controller
+    public class PayPalController : Controller
     {
         private readonly IPayPalService _payPalService;
 
-        public PaypalController(IPayPalService payPalService)
+        public PayPalController(IPayPalService payPalService)
         {
             _payPalService = payPalService;
         }

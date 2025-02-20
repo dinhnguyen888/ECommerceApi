@@ -13,7 +13,7 @@ using VNPAY.NET.Models;
 
 namespace ECommerceApi.Services
 {
-    public class VnpayService 
+    public class VnpayService : IVnpayService
     {
         private readonly IVnpay _vnpay;
         private readonly string _tmnCode;
@@ -43,6 +43,42 @@ namespace ECommerceApi.Services
             _productService = productService;
         }
 
+        public async Task<string> CreatePaymentInVnpay(PaymentPostDto dto, string ipAddress)
+        {
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var paymentId = await _paymentService.CreatePaymentAsync(dto);
+                    var paymentUrl = this.CreatePaymentUrl(dto.ProductPrice, paymentId, ipAddress);
+                    await transaction.CommitAsync();
+                    return paymentUrl;
+                }
+                catch (Exception e)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+        }
+
+        public async Task<bool> handleIpnCallBack(IQueryCollection query)
+        {
+            var paymentResult = _vnpay.GetPaymentResult(query);
+            if (paymentResult.IsSuccess)
+            {
+                var description = paymentResult.Description;
+                if (!long.TryParse(description, out var paymentId))
+                {
+                    throw new InvalidOperationException("Invalid payment ID in the description.");
+                }
+                var payment = await _paymentService.ChangePaymentStatusAndGetPaymentInfo(true, paymentId);
+                await _paymentService.SendEmailUsingPaymentInfo(payment);
+                return true;
+            }
+            return false;
+        }
+
         public string CreatePaymentUrl(long moneyToPay, string description, string ipAddress)
         {
             var request = new PaymentRequest
@@ -56,13 +92,13 @@ namespace ECommerceApi.Services
                 Currency = Currency.VND,
                 Language = DisplayLanguage.Vietnamese
             };
-     
+
             return _vnpay.GetPaymentUrl(request);
         }
 
         public PaymentResult ProcessPaymentResult(IQueryCollection query)
         {
-            
+
             return _vnpay.GetPaymentResult(query);
         }
 

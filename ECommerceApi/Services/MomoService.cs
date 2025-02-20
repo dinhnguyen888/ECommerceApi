@@ -1,13 +1,15 @@
 ﻿using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
+using ECommerceApi.Services;
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-public class MomoService
+public class MomoService : IMomoService
 {
     private readonly string Endpoint;
     private readonly string PartnerCode;
@@ -17,11 +19,14 @@ public class MomoService
     private readonly string IpnUrl;
     private readonly IConfiguration _configuration;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    public MomoService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+    private readonly AppDbContext _context;
+    private readonly IPaymentService _paymentService;
+    public MomoService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, AppDbContext context, IPaymentService paymentService)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-
+        _context = context;
+        _paymentService = paymentService;
         // Lấy cấu hình
         Endpoint = _configuration.GetValue<string>("Momo:Endpoint");
         PartnerCode = _configuration.GetValue<string>("Momo:PartnerCode");
@@ -38,10 +43,42 @@ public class MomoService
         var host = baseRequest.Host.HasValue ? baseRequest.Host.Value : "localhost";
         IpnUrl = $"{scheme}://{host}/api/Momo/ipn";
     }
+
+    public async Task<string> CreatePaymentWithMomo(PaymentPostDto dto)
+    {
+        using (var transaction = await _context.Database.BeginTransactionAsync())
+        {
+            try
+            {
+                var paymentId = await _paymentService.CreatePaymentAsync(dto);
+                var paymentUrl = await this.CreatePaymentRequestAsync(dto.ProductPrice, dto.ProductId, paymentId);
+                await transaction.CommitAsync();
+                return paymentUrl;
+            }
+            catch (Exception e)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+    }
+
+    public async Task<bool> HandleMomoIpn(MomoIpnRequest request)
+    {
+        var payment = await _paymentService.ChangePaymentStatusAndGetPaymentInfo(request.ResultCode == 0, long.Parse(request.OrderId));
+        if (payment == null)
+        {
+            throw new Exception("something wrong when change PaymentStatus");
+        }
+
+        await _paymentService.SendEmailUsingPaymentInfo(payment);
+        return true;
+    }
+
+
     public async Task<string> CreatePaymentRequestAsync(long amount, string description, string orderIdInput)
     {
         string orderId = orderIdInput;
-        //string orderId = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
         string requestId = orderId;
         string orderInfo = description;
         string requestType = "payWithATM";

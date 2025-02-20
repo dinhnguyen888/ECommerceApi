@@ -13,14 +13,14 @@ namespace ECommerceApi.Controllers
     [ApiController]
     public class VnpayController : ControllerBase
     {
-        private readonly VnpayService _vnpayService;
-        private readonly IPaymentService _paymentService;
+        private readonly IVnpayService _vnpayService;
+
         private readonly IConfiguration _configuration;
 
-        public VnpayController(VnpayService vnpayService, IPaymentService paymentService, IConfiguration configuration)
+        public VnpayController(IVnpayService vnpayService, IConfiguration configuration)
         {
             _vnpayService = vnpayService;
-            _paymentService = paymentService;
+
             _configuration = configuration;
         }
 
@@ -29,12 +29,8 @@ namespace ECommerceApi.Controllers
         {
             try
             {
-                
                 var ipAddress = NetworkHelper.GetIpAddress(HttpContext); // get IP address of equitment
-                var moneyToPay = payment.ProductPrice;
-                var paymentId = await _paymentService.CreatePaymentAsync(payment);
-                var description = paymentId; //use description to store paymentId
-                var paymentUrl = _vnpayService.CreatePaymentUrl(moneyToPay, description, ipAddress);
+                var paymentUrl = await _vnpayService.CreatePaymentInVnpay(payment, ipAddress);
 
                 return Created(paymentUrl, paymentUrl);
             }
@@ -51,21 +47,11 @@ namespace ECommerceApi.Controllers
             {
                 try
                 {
-                    var paymentResult = _vnpayService.ProcessPaymentResult(Request.Query);
-                    if (paymentResult.IsSuccess)
-                    {
-                        var description = paymentResult.Description;
+                        var paymentResult = await _vnpayService.handleIpnCallBack(Request.Query);
 
-                        var paymentId = Convert.ToInt64(description);
-
-                        var payment = await _paymentService.ChangePaymentStatusAndGetPaymentInfo(true, paymentId);
-                        await _paymentService.SendEmailUsingPaymentInfo(payment);
-
+                        if(paymentResult == true)
                         return Redirect("/api/Vnpay/Callback"); // will change to frontend URL in the future
-                    }
-
-
-                    return BadRequest("Thanh toán thất bại");
+                        else return BadRequest("IPN Fail");
                 }
                 catch (Exception ex)
                 {
@@ -73,7 +59,7 @@ namespace ECommerceApi.Controllers
                 }
             }
 
-            return NotFound("Không tìm thấy thông tin thanh toán.");
+            return NotFound("Can not find Payment info");
         }
 
         [HttpGet("Callback")]
@@ -89,8 +75,6 @@ namespace ECommerceApi.Controllers
 
                     if (paymentResult.IsSuccess)
                     {
-                      
-
                         return Redirect(_configuration["URL:FrontendUrlPaymentCallback"]);
                     }
 

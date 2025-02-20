@@ -93,12 +93,12 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IGitHubService, GitHubService>();
 builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddScoped<VnpayService>();
+builder.Services.AddScoped<IVnpayService,VnpayService>();
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
-builder.Services.AddScoped<MomoService>();
+builder.Services.AddScoped<IMomoService,MomoService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
-builder.Services.AddScoped<PayosService>();
+builder.Services.AddScoped<IPayosService, PayosService>();
 builder.Services.AddScoped<IPayPalService, PayPalService>();
 
 builder.Services.AddCors(options =>

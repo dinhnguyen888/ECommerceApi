@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Transactions;
 
-public class PayosService
+public class PayosService : IPayosService
 {
     private readonly IMapper _mapper;
     private readonly IPaymentService _paymentService;
@@ -22,7 +22,7 @@ public class PayosService
     private string cancelUrl;
     private PayOS _payOS;
     private readonly AppDbContext _dbContext;
-    public PayosService(IMapper mapper, IPaymentService paymentService, IConfiguration configuration, AppDbContext appDbContext  )
+    public PayosService(IMapper mapper, IPaymentService paymentService, IConfiguration configuration, AppDbContext appDbContext)
     {
         _configuration = configuration;
         _mapper = mapper;
@@ -74,7 +74,7 @@ public class PayosService
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            throw; 
+            throw;
         }
     }
     public async Task<PaymentLinkInformation> GetOrderAsync(int orderId)
@@ -117,7 +117,7 @@ public class PayosService
     }
 
 
-    
+
 }
 
 

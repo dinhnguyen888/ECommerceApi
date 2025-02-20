@@ -10,15 +10,13 @@ using VNPAY.NET.Models;
 [Route("api/Momo")]
 public class MomoController : ControllerBase
 {
-    private readonly MomoService _momoService;
-    private readonly IPaymentService _paymentService;
+    private readonly IMomoService _momoService;
     private readonly ILogger<MomoController> _logger;
    
 
-    public MomoController(MomoService momoService, IPaymentService paymentService, ILogger<MomoController> logger)
+    public MomoController(IMomoService momoService , ILogger<MomoController> logger)
     {
         _momoService = momoService;
-        _paymentService = paymentService;
         _logger = logger;
 
     }
@@ -28,12 +26,7 @@ public class MomoController : ControllerBase
     {
         try
         {
-            var paymentId = await _paymentService.CreatePaymentAsync(request);
-            long amount = request.ProductPrice;
-            string description = request.ProductPay;
-            string orderId = paymentId.ToString();
-
-            var payUrl = await _momoService.CreatePaymentRequestAsync(amount, description, orderId);
+           var payUrl = await _momoService.CreatePaymentWithMomo(request);
             if (!string.IsNullOrEmpty(payUrl))
             {
                 return Ok(payUrl);
@@ -57,19 +50,10 @@ public class MomoController : ControllerBase
                 return BadRequest(new { message = "Invalid request data." });
             }
 
-       
-
-            var payment = await _paymentService.ChangePaymentStatusAndGetPaymentInfo(request.ResultCode == 0, long.Parse(request.OrderId));
-            if (payment == null)
-            {
-                return NotFound(new { message = "Payment not found." });
-            }
-
-            await _paymentService.SendEmailUsingPaymentInfo(payment);
-
+            var handleStatus = await  _momoService.HandleMomoIpn(request);
+            if(handleStatus =! true) return BadRequest(handleStatus); 
+            return Ok();
             
-            return Ok(
-          );
         }
         catch (Exception ex)
         {
