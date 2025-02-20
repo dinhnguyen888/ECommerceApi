@@ -13,14 +13,14 @@ public class MomoController : ControllerBase
     private readonly MomoService _momoService;
     private readonly IPaymentService _paymentService;
     private readonly ILogger<MomoController> _logger;
-    private readonly IConfiguration _configuration;
+   
 
-    public MomoController(MomoService momoService, IPaymentService paymentService, ILogger<MomoController> logger, IConfiguration configuration)
+    public MomoController(MomoService momoService, IPaymentService paymentService, ILogger<MomoController> logger)
     {
         _momoService = momoService;
         _paymentService = paymentService;
         _logger = logger;
-        _configuration = configuration;
+
     }
 
     [HttpGet("create-payment")]
@@ -57,16 +57,7 @@ public class MomoController : ControllerBase
                 return BadRequest(new { message = "Invalid request data." });
             }
 
-            // Validate the signature
-            //string secretKey = _configuration["Momo:SecretKey"];
-            //string rawData = $"{request.PartnerCode}{request.OrderId}{request.RequestId}{request.Amount}{request.OrderInfo}{request.OrderType}{request.TransId}{request.ResultCode}{request.Message}{request.PayType}{request.ResponseTime}{request.ExtraData}";
-            ////string calculatedSignature = _momoService.CreateSignature(rawData, secretKey);
-
-            //if (request.Signature != calculatedSignature)
-            //{
-            //    _logger.LogWarning("Invalid signature for Momo IPN request.");
-            //    return BadRequest(new { message = "Invalid signature." });
-            //}
+       
 
             var payment = await _paymentService.ChangePaymentStatusAndGetPaymentInfo(request.ResultCode == 0, long.Parse(request.OrderId));
             if (payment == null)
@@ -76,7 +67,7 @@ public class MomoController : ControllerBase
 
             await _paymentService.SendEmailUsingPaymentInfo(payment);
 
-            // Trả về phản hồi chuẩn của MoMo
+            
             return Ok(
           );
         }
