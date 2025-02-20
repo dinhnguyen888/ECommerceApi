@@ -10,6 +10,10 @@ using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using VNPAY.NET;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Net.payOS;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,7 +81,7 @@ builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Register Helpers and Services
-builder.Services.AddSingleton<PasswordHelper>(); // Hoặc Transient nếu cần
+builder.Services.AddSingleton<PasswordHelper>();
 
 builder.Services.AddSingleton<IProductService, ProductService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
@@ -89,22 +93,13 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IGitHubService, GitHubService>();
 builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddScoped<VnpayService>(); // Đổi từ Transient -> Scoped
-builder.Services.AddTransient<IEmailService, EmailService>(); // Đổi từ Transient để tránh xung đột
+builder.Services.AddScoped<VnpayService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<MomoService>();
-
-//builder.Services.AddSingleton(new MomoService(
-//        builder.Configuration["MoMo:PartnerCode"],
-//         builder.Configuration["MoMo:AccessKey"],
-//        builder.Configuration["MoMo:SecretKey"],
-//         builder.Configuration["MoMo:Endpoint"]
-//    ));
-//builder.Services.AddSingleton<IVnpay, Vnpay>();
-
-//builder.Services.AddScoped<IUserProfileService, UserProfileService>();
-
-
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<PayosService>();
+builder.Services.AddScoped<IPayPalService, PayPalService>();
 
 builder.Services.AddCors(options =>
 {
@@ -120,6 +115,7 @@ builder.Services.AddHttpContextAccessor();
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSettings["Key"];
+
 if (string.IsNullOrEmpty(jwtKey))
 {
     throw new Exception("JWT Key is missing in configuration");
@@ -131,6 +127,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultSignInScheme = "Cookies";
+
 })
 .AddJwtBearer(options =>
 {
@@ -147,7 +144,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie("Cookies", options =>
 {
-    options.LoginPath = "/api/Oauth/login"; // URL đăng nhập
+    options.LoginPath = "/api/Oauth/login";
 
 })
 .AddOAuth("GitHub", opt =>
@@ -168,35 +165,8 @@ builder.Services.AddAuthentication(options =>
 }
 
 )
-.AddFacebook(facebookOptions =>
-{
-    facebookOptions.AppId = builder.Configuration["Facebook:AppId"];
-    facebookOptions.AppSecret = builder.Configuration["Facebook:AppSecret"];
-    facebookOptions.CallbackPath = "/callback/facebook";
-    facebookOptions.SaveTokens = true;
-    facebookOptions.Events.OnRedirectToAuthorizationEndpoint = (redirectContext) =>
-    {
-        Console.WriteLine(redirectContext.RedirectUri);
-        redirectContext.Response.Redirect(redirectContext.RedirectUri);
-        return Task.CompletedTask;
-    };
-    facebookOptions.Events.OnTicketReceived = (context) =>
-    {
-        Console.WriteLine(context.HttpContext.User);
-        return Task.CompletedTask;
-    };
-    facebookOptions.Events.OnCreatingTicket = (context) =>
-    {
-        Console.WriteLine(context.Identity);
-        return Task.CompletedTask;
-    };
-    facebookOptions.Events.OnAccessDenied = (context) =>
-    {
-        Console.WriteLine(context.HttpContext.User);
-        return Task.CompletedTask;
-    };
+;
 
-});
 
 builder.Services.AddAuthorization(options =>
 {
@@ -206,6 +176,9 @@ builder.Services.AddAuthorization(options =>
 
 
 // Build the app
+
+
+
 //builder.WebHost.UseUrls("http://*:7202");
 var app = builder.Build();
 
@@ -221,7 +194,6 @@ using (var scope = app.Services.CreateScope())
 // Middleware setup
 app.UseSwagger();
 app.UseSwaggerUI();
-
 app.UseHttpsRedirection();
 app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
