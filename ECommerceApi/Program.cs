@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Net.payOS;
+using ECommerceApi.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -100,6 +101,8 @@ builder.Services.AddScoped<IMomoService,MomoService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IPayosService, PayosService>();
 builder.Services.AddScoped<IPayPalService, PayPalService>();
+builder.Services.AddScoped<INewsService, NewsService>();
+builder.Services.AddScoped<ICrawNewsService, CrawNewsService>();
 
 builder.Services.AddCors(options =>
 {

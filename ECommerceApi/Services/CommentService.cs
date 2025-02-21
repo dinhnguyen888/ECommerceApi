@@ -2,23 +2,22 @@
 using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
 using ECommerceApi.Models;
+using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ECommerceApi.Services
-{
+{ 
     public class CommentService : ICommentService
     {
         private readonly IMongoCollection<Comment> _comments;
         private readonly IMapper _mapper;
 
-        public CommentService(IConfiguration config, IMapper mapper)
+        public CommentService(MongoDbContext context, IMapper mapper)
         {
-            var client = new MongoClient(config.GetConnectionString("MongoDBConnection"));
-            var database = client.GetDatabase("ECommerceDb");
-            _comments = database.GetCollection<Comment>("Comments");
+            _comments = context.GetCollection<Comment>("Comment");
             _mapper = mapper;
         }
 
