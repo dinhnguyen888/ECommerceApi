@@ -40,7 +40,7 @@ services:
     depends_on:
       - app
     volumes:
-      - /home/user/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
       - "80:80"
 

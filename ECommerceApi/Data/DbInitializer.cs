@@ -3,7 +3,7 @@ using System.Linq;
 using ECommerceApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using BCrypt.Net; // Thêm thư viện BCrypt
+using BCrypt.Net;
 
 public static class DbInitializer
 {
