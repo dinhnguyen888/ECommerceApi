@@ -14,11 +14,11 @@ namespace ECommerceApi.Dtos
         [BsonElement("price")]
         public double Price { get; set; }
 
-        [BsonElement("category")]
-        public string Category { get; set; }
+        [BsonElement("feature")]
+        public string Feature { get; set; }
 
-        [BsonElement("specification")]
-        public string Specification { get; set; }
+        [BsonElement("technologyUsed")]
+        public string TechnologyUsed { get; set; }
 
         [BsonElement("tag")]
         public string Tag { get; set; }
@@ -26,14 +26,11 @@ namespace ECommerceApi.Dtos
         [BsonElement("imageUrls")]
         public List<string> ImageUrls { get; set; } // Lấy toàn bộ danh sách hình ảnh
 
-        [BsonElement("description")]
-        public string Description { get; set; }
-
         [BsonElement("descriptionDetail")]
         public string DescriptionDetail { get; set; }
 
-        [BsonElement("createdAt")]
-        public DateTime CreatedAt { get; set; }
+        [BsonElement("postedDate")]
+        public DateTime PostedDate { get; set; }
     }
 
 }

@@ -22,17 +22,17 @@ namespace ECommerceApi.Dtos
         [BsonElement("price")]
         public double Price { get; set; }
 
-        [BsonElement("specification")]
-        public string Specification { get; set; }
+        [BsonElement("feature")]
+        public string Feature { get; set; }
 
-        [BsonElement("category")]
-        public string Category { get; set; }
+        [BsonElement("technologyUsed")]
+        public string TechnologyUsed { get; set; }
 
         [BsonElement("imageUrls")]
         public List<string> ImageUrls { get; set; }
 
-        [BsonElement("createdAt")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        //[BsonElement("postedDate")]
+        //public DateTime PostedDate { get; set; } = DateTime.UtcNow;
         [BsonElement("productUrl")]
         public string ProductUrl { get; set; } // for store an project or tool in google 
     }

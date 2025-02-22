@@ -24,11 +24,11 @@ namespace ECommerceApi.Models
         [BsonElement("price")]
         public double Price { get; set; }
 
-        [BsonElement("specification")]
-        public string Specification { get; set; }
+        [BsonElement("feature")]
+        public string Feature { get; set; }
 
-        [BsonElement("category")]
-        public string Category { get; set; }
+        [BsonElement("technologyUsed")]
+        public string TechnologyUsed { get; set; }
 
         [BsonElement("imageUrls")]
         public List<string> ImageUrls { get; set; }
