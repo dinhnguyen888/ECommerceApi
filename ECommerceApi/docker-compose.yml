@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "saaS@nguyenphucdinh"
-      MYSQL_DATABASE: E-commerce-database
+      MYSQL_DATABASE: e_commerce_database
     ports:
       - "3306:3306"
     volumes:
