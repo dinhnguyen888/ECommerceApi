@@ -15,9 +15,6 @@ namespace ECommerceApi.Dtos
         [BsonElement("price")]
         public double Price { get; set; }
 
-        [BsonElement("category")]
-        public string Category { get; set; }
-
         [BsonElement("description")]
         public string Description { get; set; }
 
@@ -30,8 +27,8 @@ namespace ECommerceApi.Dtos
 
         public string ImageUrl => ImageUrls?.FirstOrDefault(); 
 
-        [BsonElement("createdAt")]
-        public DateTime CreatedAt { get; set; }
+        [BsonElement("postedDate")]
+        public DateTime PostedDate { get; set; }
     }
 
 }
