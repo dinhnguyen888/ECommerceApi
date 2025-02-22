@@ -37,7 +37,7 @@ namespace ECommerceApi.Services
             _context = context;
         }
 
-        public async Task<(string, string)> LoginAsync(string email, string password)
+        public async Task<string> LoginAsync(string email, string password)
         {
             var account = await _context.Accounts.Include(a => a.Role).FirstOrDefaultAsync(a => a.Email == email);
 
@@ -48,8 +48,8 @@ namespace ECommerceApi.Services
 
             var inputPara =  _mapper.Map<TokenGenerateDto>(account);
             var accessToken =  _tokenService.GenerateToken(inputPara);
-            var refreshToken = await _refreshTokenService.GenerateRefreshTokenAsync(account.Id);
-            return (accessToken, refreshToken.Token);
+          
+            return (accessToken);
         }
 
         public async Task<bool> RegisterAsync(AccountPostDto account)
@@ -95,8 +95,9 @@ namespace ECommerceApi.Services
         }
 
         //make a admin login method
-        public async Task<(string, string)> AdminLoginAsync(string email, string password, string roleName)
+        public async Task<(string, string)> AdminLoginAsync(string email, string password)
         {
+            string roleName = "Admin";
             //check roleName is existed in database
             var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == roleName);
             if (role == null)

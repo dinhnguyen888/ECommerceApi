@@ -25,7 +25,7 @@ namespace ECommerceApi.Services
             };
             bool reusult = await _authService.RegisterAsync(accountDto); // Register the account if it doesn't exist
    
-            var (accessToken, refreshToken) = await _authService.LoginAsync(accountDto.Email, accountDto.Password);
+            var accessToken = await _authService.LoginAsync(accountDto.Email, accountDto.Password);
             return accessToken;
         }
     }

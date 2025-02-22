@@ -24,7 +24,7 @@ namespace ECommerceApi.Controllers
         {
             try
             {
-                var (accessToken, refeshToken) = await _authService.LoginAsync(email, password);
+                var accessToken = await _authService.LoginAsync(email, password);
 
                 if (string.IsNullOrEmpty(accessToken))
                 {
@@ -32,7 +32,7 @@ namespace ECommerceApi.Controllers
                     return Unauthorized("Invalid username or password.");
                 }
 
-                return Ok(new { AccessToken = (accessToken), RefreshToken = (refeshToken) });
+                return Ok(new { AccessToken = (accessToken) });
             }
             catch (Exception ex)
             {
@@ -40,12 +40,13 @@ namespace ECommerceApi.Controllers
                 return StatusCode(500, "Internal server error.");
             }
         }
+
         [HttpPost("admin-login")]
         public async Task<IActionResult> AdminLogin([FromQuery] string email, [FromQuery] string password)
         {
             try
             {
-                var (accessToken, refeshToken) = await _authService.AdminLoginAsync(email, password,"Admin");
+                var (accessToken, refeshToken) = await _authService.AdminLoginAsync(email, password);
 
                 if (string.IsNullOrEmpty(accessToken))
                 {
