@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 /ECommerceApi/appsettings.json
+/ECommerceApi/nginx.conf
