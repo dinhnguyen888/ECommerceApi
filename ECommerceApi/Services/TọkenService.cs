@@ -27,10 +27,10 @@ public class TokenService : ITokenService
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.Email, dto.Email),
+            new Claim("email", dto.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.NameIdentifier, dto.UserId.ToString()),
-            new Claim(ClaimTypes.Role, dto.RoleName ?? throw new Exception("rolename null")),
+            new Claim("roleName", dto.RoleName ?? throw new Exception("rolename null")),
             new Claim("userId" , dto.UserId.ToString())
         };
 
