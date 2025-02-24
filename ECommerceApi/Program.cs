@@ -170,17 +170,16 @@ builder.Services.AddAuthentication(options =>
 )
 ;
 
-
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy =>
         policy.RequireClaim("roleName", "Admin"));
 
     options.AddPolicy("SystemUserOnly", policy =>
-       options.AddPolicy("SystemUserOnly", policy =>
-       policy.RequireClaim("roleName", new[] { "Admin", "User" }));
-
+        policy.RequireClaim("roleName", new[] { "Admin", "User" }));
 });
+
+
 
 
 // Build the app
