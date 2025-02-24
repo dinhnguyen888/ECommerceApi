@@ -75,8 +75,8 @@ namespace ECommerceApi.Controllers
             }
         }
 
-        [HttpGet("login-google")]
-        public async Task<IActionResult> LoginWithGoogle(GoogleRequestDto googleDto)
+        [HttpPost("login-google")]
+        public async Task<IActionResult> LoginWithGoogle([FromBody]GoogleRequestDto googleDto)
         {
             try
             {
