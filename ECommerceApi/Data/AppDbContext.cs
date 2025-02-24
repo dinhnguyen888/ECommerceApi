@@ -22,6 +22,9 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Account>()
             .HasIndex(a => a.Name)
             .IsUnique();
+        modelBuilder.Entity<Account>()
+            .HasIndex(a => a.Email)
+            .IsUnique();
 
         modelBuilder.Entity<RefreshToken>()
             .HasOne(rt => rt.Account)
