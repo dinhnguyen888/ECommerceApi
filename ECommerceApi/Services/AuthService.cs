@@ -117,5 +117,10 @@ namespace ECommerceApi.Services
             return (accessToken, refreshToken.Token);
         }
 
+        public async Task<bool> CheckEmailExisting(string email)
+        {
+            var account = await _context.Accounts.Include(a => a.Role).SingleOrDefaultAsync(a => a.Email == email);
+            return account != null;
+        }
     }
 }

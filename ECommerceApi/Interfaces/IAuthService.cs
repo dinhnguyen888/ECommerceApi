@@ -9,5 +9,6 @@ namespace ECommerceApi.Interfaces
         Task<bool> RegisterAsync(AccountPostDto account);
         Task<string> RefreshTokenAsync(string refreshToken);
         Task LogoutAsync(string refreshToken);
+        Task<bool> CheckEmailExisting(string email);
     }
 }
