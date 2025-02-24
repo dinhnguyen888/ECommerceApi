@@ -101,6 +101,7 @@ builder.Services.AddScoped<IMomoService,MomoService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IPayosService, PayosService>();
 builder.Services.AddScoped<IPayPalService, PayPalService>();
+builder.Services.AddScoped<IGoogleService, GoogleService>();
 builder.Services.AddScoped<INewsService, NewsService>();
 builder.Services.AddScoped<ICrawNewsService, CrawNewsService>();
 

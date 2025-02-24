@@ -1,19 +1,20 @@
-﻿namespace ECommerceApi.Dtos
+﻿public class GoogleRequestDto
 {
-    public class GoogleRequestDto
-    {
-        public string Iss { get; set; }
-        public string Sup { get; set; }
-        public string Azp { get; set; }
-        public string Aud { get; set; }
-        public string Iat { get; set; }
-        public string Exp { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string Local { get; set; }
-        public string Picture { get; set; }
-        public string GivenName { get; set; }
-        public string FamilyName { get; set; }
-        public string EmailVerified { get; set; }
-    }
+    public string iss { get; set; }
+    public string azp { get; set; }
+    public string aud { get; set; }
+    public string sub { get; set; }
+    public string email { get; set; }
+    public string email_verified { get; set; }
+    public string nbf { get; set; }
+    public string name { get; set; }
+    public string picture { get; set; }
+    public string given_name { get; set; }
+    public string family_name { get; set; }
+    public string iat { get; set; }
+    public string exp { get; set; }
+    public string jti { get; set; }
+    public string alg { get; set; }
+    public string kid { get; set; }
+    public string typ { get; set; }
 }
