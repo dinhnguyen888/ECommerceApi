@@ -14,11 +14,13 @@ namespace ECommerceApi.Controllers
     {
         private readonly IGitHubService _gitHubService;
         private readonly IConfiguration _configuration;
+        private readonly IGoogleService _googleService;
 
-        public OAuthController(IGitHubService gitHubService, IConfiguration configuration)
+        public OAuthController(IGitHubService gitHubService, IConfiguration configuration, IGoogleService googleService)
         {
             _gitHubService = gitHubService;
             _configuration = configuration;
+            _googleService = googleService;
         }
 
         [HttpGet("login")]
@@ -74,16 +76,18 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpGet("login-google")]
-        public IActionResult LoginWithGoogle(GoogleRequestDto googleDto)
+        public async Task<IActionResult> LoginWithGoogle(GoogleRequestDto googleDto)
         {
-           try
+            try
             {
-                return Ok();
+                var token = await _googleService.GenerateTokenFromGoogleInfo(googleDto);
+                return Ok(new { accessToken = token });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Message = "An error occurred during login.", Error = ex.Message });
+                return StatusCode(500, new { message = "Internal Server Error", error = ex.Message });
             }
+
         }
 
 
