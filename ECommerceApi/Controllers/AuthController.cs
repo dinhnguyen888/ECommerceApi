@@ -26,13 +26,11 @@ namespace ECommerceApi.Controllers
             {
                 var accessToken = await _authService.LoginAsync(email, password);
 
-                if (string.IsNullOrEmpty(accessToken))
-                {
-                    _logger.LogWarning("Invalid login attempt for user {Username}", email);
-                    return Unauthorized("Invalid username or password.");
-                }
-
                 return Ok(new { AccessToken = (accessToken) });
+            }
+            catch (UnauthorizedAccessException uex)
+            {
+                return Unauthorized(uex.Message);
             }
             catch (Exception ex)
             {
