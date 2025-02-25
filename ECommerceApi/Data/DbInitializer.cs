@@ -33,6 +33,7 @@ public static class DbInitializer
                     Name = "Admin",
                     Email = "admin@admin.com",
                     RoleId = 1,
+                    PictureUrl = null,
                     Password = BCrypt.Net.BCrypt.HashPassword("Admin@123") // Dùng BCrypt để hash mật khẩu
                 };
 

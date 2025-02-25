@@ -37,6 +37,7 @@ namespace ECommerceApi.Services
             _context = context;
         }
 
+        //login method
         public async Task<string> LoginAsync(string email, string password)
         {
             var account = await _context.Accounts.Include(a => a.Role).FirstOrDefaultAsync(a => a.Email == email);
@@ -52,6 +53,7 @@ namespace ECommerceApi.Services
             return (accessToken);
         }
 
+        //register method
         public async Task<bool> RegisterAsync(AccountPostDto account)
         {
             var existingAccount = await _accountService.CheckLegitAccount(account.Email);

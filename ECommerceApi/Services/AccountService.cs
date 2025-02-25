@@ -44,6 +44,8 @@ namespace ECommerceApi.Services
 
         public async Task<AccountGetDto> CreateAccountAsync(AccountPostDto accountDto)
         {
+
+            // Check role exist or not.if not create new role
             var role = await _context.Roles.SingleOrDefaultAsync(r => r.RoleName == "User");
 
             if (role == null)
