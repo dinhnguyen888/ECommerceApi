@@ -104,6 +104,7 @@ builder.Services.AddScoped<IPayPalService, PayPalService>();
 builder.Services.AddScoped<IGoogleService, GoogleService>();
 builder.Services.AddScoped<INewsService, NewsService>();
 builder.Services.AddScoped<ICrawNewsService, CrawNewsService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 
 builder.Services.AddCors(options =>
 {
