@@ -32,7 +32,7 @@ namespace ECommerceApi.Controllers
             }
         }
         [HttpPut]
-        public async Task<IActionResult> UpdateProfile([FromQuery] string token, [FromBody] AccountUpdateDto accountDto)
+        public async Task<IActionResult> UpdateProfile([FromHeader(Name = "Authorization")] string token, [FromBody] AccountUpdateDto accountDto)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpPut("change-password")]
-        public async Task<IActionResult> ChangePassword([FromQuery] string token, [FromQuery] string oldPassword, [FromQuery] string newPassword)
+        public async Task<IActionResult> ChangePassword([FromHeader(Name = "Authorization")] string token, [FromQuery] string oldPassword, [FromQuery] string newPassword)
         {
             try
             {
