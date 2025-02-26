@@ -70,7 +70,7 @@ public class TokenService : ITokenService
     // Validate Token
     private ClaimsPrincipal ValidateToken(string token)
     {
-        var jwtSettings = _configuration.GetSection("JwtSettings");
+        var jwtSettings = _configuration.GetSection("Jwt");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
 
         var tokenHandler = new JwtSecurityTokenHandler();
