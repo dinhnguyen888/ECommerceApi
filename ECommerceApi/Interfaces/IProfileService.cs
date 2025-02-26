@@ -6,6 +6,7 @@ namespace ECommerceApi.Interfaces
     {
         Task<bool> ChangePassword(string token, ChangePasswordDto changePasswordDto);
         Task<ProfileGetDto> GetProfileAsync(string token);
-        Task<ProfileGetDto> UpdateProfileAsync(string token, ProfileUpdateDto profileUpdateDto);
+        Task<bool> UpdateProfileAsync(string token, ProfileUpdateDto profileUpdateDto);
+        Task<bool> UpdateProfileImageAsync(string token, string pictureUrl);
     }
 }

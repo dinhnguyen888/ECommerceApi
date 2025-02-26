@@ -43,8 +43,8 @@ namespace ECommerceApi.Controllers
             try
             {
                 string cleanToken = token.Replace("Bearer ", "");
-                var profile = await _profileService.UpdateProfileAsync(cleanToken, profileUpdateDto);
-                return Ok(profile);
+                var result = await _profileService.UpdateProfileAsync(cleanToken, profileUpdateDto);
+                return Ok(result);
             }
             catch (UnauthorizedAccessException uex)
             {
@@ -78,5 +78,26 @@ namespace ECommerceApi.Controllers
             }
         }
 
+        // Update profile info
+        [HttpPut]
+        public async Task<IActionResult> UpdateAvatar(
+            [FromHeader(Name = "Authorization")] string token,
+            [FromBody] string  avatarUrl)
+        {
+            try
+            {
+                string cleanToken = token.Replace("Bearer ", "");
+                var isUpdated = await _profileService.UpdateProfileImageAsync(cleanToken, avatarUrl);
+                return Ok(isUpdated);
+            }
+            catch (UnauthorizedAccessException uex)
+            {
+                return Unauthorized(uex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

@@ -46,7 +46,7 @@ namespace ECommerceApi.Services
             return _mapper.Map<ProfileGetDto>(account);
         }
 
-        public async Task<ProfileGetDto> UpdateProfileAsync(string token, ProfileUpdateDto profileUpdateDto)
+        public async Task<bool> UpdateProfileAsync(string token, ProfileUpdateDto profileUpdateDto)
         {
             Guid accountId = Guid.Parse(_tokenService.ValidateTokenAndGetUserId(token));
             if (accountId == null)
@@ -64,8 +64,35 @@ namespace ECommerceApi.Services
             _mapper.Map(profileUpdateDto, account);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<ProfileGetDto>(account);
+            return true;
         }
+
+        public async Task<bool> UpdateProfileImageAsync(string token, string pictureUrl)
+        {
+            // use TryParse to validate token
+            if (!Guid.TryParse(_tokenService.ValidateTokenAndGetUserId(token), out Guid accountId))
+            {
+                throw new UnauthorizedAccessException("Invalid token");
+            }
+
+            var account = await _context.Accounts
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Id == accountId);
+
+            // Check
+            if (account == null)
+            {
+                throw new KeyNotFoundException("Account not found");
+            }
+
+            // Update
+            account.PictureUrl = pictureUrl;
+
+            // Save
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
 
         public async Task<bool> ChangePassword(string token, ChangePasswordDto changePasswordDto)
         {
