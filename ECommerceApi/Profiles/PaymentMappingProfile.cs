@@ -16,9 +16,9 @@ namespace ECommerceApi.Profiles
                 .ForMember(dest => dest.PaymentStatus, opt => opt.Ignore());
 
        
-            CreateMap<Payment, PaymentGetDto>()
-             ;
+            CreateMap<Payment, PaymentGetDto>();
 
+            CreateMap<Payment, PaymentViewHistoryDto>();
 
             CreateMap<PaymentUpdateDto, Payment>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) 

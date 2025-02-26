@@ -75,11 +75,27 @@ public class TokenService : ITokenService
             return null; 
         }
     }
-    public string? ValidateTokenAndGetUserId(string token)
+    public string ValidateTokenAndGetUserId(string token)
     {
         var jwtToken = _tokenHandler.ReadJwtToken(token);
+
+        //if jwt token is expired or null, thow exception
+        if (jwtToken.ValidTo < DateTime.UtcNow)
+        {
+            throw new SecurityTokenException("Token is expired");
+        }
+
+        if (jwtToken == null)
+        {
+            throw new SecurityTokenException("Token is invalid");
+        }
+
         var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "userId");
-        return userIdClaim?.Value;
+        if (userIdClaim == null)
+        {
+            throw new SecurityTokenException("userId can not found in token");
+        }
+        return userIdClaim.Value;
     }
 
 

@@ -35,11 +35,12 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpGet("account/{accountId}")]
-        public async Task<ActionResult<IEnumerable<PaymentGetDto>>> GetPaymentsByAccountId(Guid accountId)
+        public async Task<ActionResult<IEnumerable<PaymentGetDto>>> GetPaymentsByAccountId([FromHeader(Name = "Authorization")] string token)
         {
             try
             {
-                var payments = await _paymentService.GetPaymentsByAccountIdAsync(accountId);
+                string cleanToken = token.Replace("Bearer ", "");
+                var payments = await _paymentService.ViewPurchaseHistory(cleanToken);
                 return Ok(payments);
             }
             catch (Exception ex)

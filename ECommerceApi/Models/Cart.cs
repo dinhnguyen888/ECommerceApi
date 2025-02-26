@@ -18,8 +18,8 @@ namespace ECommerceApi.Models
         [BsonElement("productId")]
         public string ProductId { get; set; } 
 
-        [BsonElement("productDescription")]
-        public string ProductDescription { get; set; } 
+        [BsonElement("imageUrl")]
+        public string ImageUrl { get; set; } 
 
         [BsonElement("price")]
         public decimal Price { get; set; }

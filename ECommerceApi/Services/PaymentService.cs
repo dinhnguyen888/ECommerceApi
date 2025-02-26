@@ -12,13 +12,19 @@ namespace ECommerceApi.Services
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
         private readonly IProductService _productService;
+        private readonly ITokenService _tokenService;
 
-        public PaymentService(AppDbContext context, IMapper mapper, IEmailService emailService, IProductService productService)
+        public PaymentService(AppDbContext context,
+            IMapper mapper,
+            IEmailService emailService,
+            IProductService productService,
+            ITokenService tokenService)
         {
             _context = context;
             _mapper = mapper;
             _emailService = emailService;
             _productService = productService;
+            _tokenService = tokenService;
         }
 
         public async Task<IEnumerable<PaymentGetDto>> GetAllPaymentsAsync()
@@ -27,10 +33,11 @@ namespace ECommerceApi.Services
             return _mapper.Map<IEnumerable<PaymentGetDto>>(payments);
         }
 
-        public async Task<IEnumerable<PaymentGetDto>> GetPaymentsByAccountIdAsync(Guid accountId)
+        public async Task<IEnumerable<PaymentViewHistoryDto>> ViewPurchaseHistory(string token)
         {
+            Guid accountId = Guid.Parse(_tokenService.ValidateTokenAndGetUserId(token));
             var payments = await _context.Payments.Where(p => p.UserId == accountId).ToListAsync();
-            return _mapper.Map<IEnumerable<PaymentGetDto>>(payments);
+            return _mapper.Map<IEnumerable<PaymentViewHistoryDto>>(payments);
         }
 
         public async Task<string> CreatePaymentAsync(PaymentPostDto paymentDto)
