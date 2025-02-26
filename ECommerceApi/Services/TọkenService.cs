@@ -18,7 +18,7 @@ public class TokenService : ITokenService
         _tokenHandler = new JwtSecurityTokenHandler();
     }
 
-    // 1. Tạo Token
+    // Generate Token
     public string GenerateToken(TokenGenerateDto dto)
     {
         var jwtSettings = _configuration.GetSection("Jwt");
@@ -46,8 +46,29 @@ public class TokenService : ITokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    // 2. Xác Thực Token
-    public ClaimsPrincipal ValidateToken(string token)
+    // Validate Token and Get UserId
+    public string ValidateTokenAndGetUserId(string token)
+    {
+        var principal = ValidateToken(token);
+
+        // if principal is null, throw exception
+        if (principal == null)
+        {
+            throw new SecurityTokenException("Token is invalid");
+        }
+
+        // get userId claim
+        var userIdClaim = principal.Claims.FirstOrDefault(claim => claim.Type == "userId");
+        if (userIdClaim == null)
+        {
+            throw new SecurityTokenException("userId can not be found in token");
+        }
+
+        return userIdClaim.Value;
+    }
+
+    // Validate Token
+    private ClaimsPrincipal ValidateToken(string token)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
@@ -72,31 +93,34 @@ public class TokenService : ITokenService
         }
         catch
         {
-            return null; 
+            return null;
         }
     }
-    public string ValidateTokenAndGetUserId(string token)
-    {
-        var jwtToken = _tokenHandler.ReadJwtToken(token);
 
-        //if jwt token is expired or null, thow exception
-        if (jwtToken.ValidTo < DateTime.UtcNow)
-        {
-            throw new SecurityTokenException("Token is expired");
-        }
 
-        if (jwtToken == null)
-        {
-            throw new SecurityTokenException("Token is invalid");
-        }
+    // Validate Token and Get User Id
+    //public string ValidateTokenAndGetUserId(string token)
+    //{
+    //    var jwtToken = _tokenHandler.ReadJwtToken(token);
 
-        var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "userId");
-        if (userIdClaim == null)
-        {
-            throw new SecurityTokenException("userId can not found in token");
-        }
-        return userIdClaim.Value;
-    }
+    //    //if jwt token is expired or null, thow exception
+    //    if (jwtToken.ValidTo < DateTime.UtcNow)
+    //    {
+    //        throw new SecurityTokenException("Token is expired");
+    //    }
+
+    //    if (jwtToken == null)
+    //    {
+    //        throw new SecurityTokenException("Token is invalid");
+    //    }
+
+    //    var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "userId");
+    //    if (userIdClaim == null)
+    //    {
+    //        throw new SecurityTokenException("userId can not found in token");
+    //    }
+    //    return userIdClaim.Value;
+    //}
 
 
 }

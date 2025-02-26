@@ -34,7 +34,7 @@ namespace ECommerceApi.Controllers
             }
         }
 
-        [HttpGet("account/{accountId}")]
+        [HttpGet("/view-purchase")]
         public async Task<ActionResult<IEnumerable<PaymentGetDto>>> GetPaymentsByAccountId([FromHeader(Name = "Authorization")] string token)
         {
             try

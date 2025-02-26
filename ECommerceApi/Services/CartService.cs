@@ -22,6 +22,15 @@ namespace ECommerceApi.Services
         {
             cart.Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString();
             cart.AddToCartAt = DateTime.UtcNow;
+
+            //check if the product is already in the user's cart
+            var existingCart = await _carts.Find(c => c.UserId == cart.UserId && c.ProductId == cart.ProductId).FirstOrDefaultAsync();
+            //if the product is already in the cart, throw exception
+            if (existingCart != null)
+            {
+                throw new Exception("Product already in cart.");
+            }
+
             await _carts.InsertOneAsync(cart);
             return cart;
         }

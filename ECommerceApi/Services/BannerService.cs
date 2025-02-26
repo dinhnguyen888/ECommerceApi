@@ -25,9 +25,9 @@ namespace ECommerceApi.Services
 
         public async Task<List<Banner>> AddBaneer(BannerPostDto bannerDto)
         {
-            // Chuyển đổi từ DTO sang model
+         
             var banner = _mapper.Map<Banner>(bannerDto);
-            banner.Id = ObjectId.GenerateNewId().ToString(); // Tạo ObjectId mới
+            banner.Id = ObjectId.GenerateNewId().ToString();
 
             await _banners.InsertOneAsync(banner);
             return await GetAllBanner();
@@ -35,9 +35,8 @@ namespace ECommerceApi.Services
 
         public async Task<bool> UpdateBaneer(string id, BannerUpdateDto bannerDto)
         {
-            // Chuyển đổi từ DTO sang model
             var updatedBanner = _mapper.Map<Banner>(bannerDto);
-            updatedBanner.Id = id; // Đảm bảo ID khớp với ID hiện tại
+            updatedBanner.Id = id; 
 
             var filter = Builders<Banner>.Filter.Eq(b => b.Id, id);
             var updateResult = await _banners.ReplaceOneAsync(filter, updatedBanner);
