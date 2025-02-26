@@ -1,6 +1,5 @@
 ﻿using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerceApi.Controllers
@@ -14,12 +13,15 @@ namespace ECommerceApi.Controllers
         {
             _profileService = profileService;
         }
+
+        // Get profile info
         [HttpGet]
-        public async Task<IActionResult> GetProfile([FromQuery] string token)
+        public async Task<IActionResult> GetProfile([FromHeader(Name = "Authorization")] string token)
         {
             try
             {
-                var profile = await _profileService.GetProfileAsync(token);
+                string cleanToken = token.Replace("Bearer ", "");
+                var profile = await _profileService.GetProfileAsync(cleanToken);
                 return Ok(profile);
             }
             catch (UnauthorizedAccessException uex)
@@ -28,33 +30,42 @@ namespace ECommerceApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error.");
-            }
-        }
-        [HttpPut]
-        public async Task<IActionResult> UpdateProfile([FromHeader(Name = "Authorization")] string token, [FromBody] AccountUpdateDto accountDto)
-        {
-            try
-            {
-                var profile = await _profileService.UpdateProfileAsync(token, accountDto);
-                return Ok(profile);
-            }
-            catch (UnauthorizedAccessException uex)
-            {
-                return Unauthorized(uex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error.");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        [HttpPut("change-password")]
-        public async Task<IActionResult> ChangePassword([FromHeader(Name = "Authorization")] string token, [FromQuery] string oldPassword, [FromQuery] string newPassword)
+        // Update profile info
+        [HttpPut]
+        public async Task<IActionResult> UpdateProfile(
+            [FromHeader(Name = "Authorization")] string token,
+            [FromBody] ProfileUpdateDto profileUpdateDto)
         {
             try
             {
-                var result = await _profileService.ChangePassword(token, oldPassword, newPassword);
+                string cleanToken = token.Replace("Bearer ", "");
+                var profile = await _profileService.UpdateProfileAsync(cleanToken, profileUpdateDto);
+                return Ok(profile);
+            }
+            catch (UnauthorizedAccessException uex)
+            {
+                return Unauthorized(uex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // Change password
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword(
+            [FromHeader(Name = "Authorization")] string token,
+            [FromBody] ChangePasswordDto changePasswordDto)
+        {
+            try
+            {
+                string cleanToken = token.Replace("Bearer ", "");
+                var result = await _profileService.ChangePassword(cleanToken, changePasswordDto);
                 return Ok(result);
             }
             catch (UnauthorizedAccessException uex)
@@ -63,8 +74,9 @@ namespace ECommerceApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error.");
+                return StatusCode(500, ex.Message);
             }
         }
+
     }
 }

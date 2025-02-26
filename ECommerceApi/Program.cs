@@ -182,7 +182,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 
-builder.WebHost.UseUrls("http://*:7202");
+builder.WebHost.UseUrls("https://*:7202");
 var app = builder.Build();
 
 

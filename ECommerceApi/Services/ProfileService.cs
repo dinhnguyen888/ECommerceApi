@@ -29,7 +29,7 @@ namespace ECommerceApi.Services
         }
 
 
-        public async Task<AccountGetDto> GetProfileAsync(string token)
+        public async Task<ProfileGetDto> GetProfileAsync(string token)
         {
             Guid accountId = Guid.Parse(_tokenService.ValidateTokenAndGetUserId(token));
             if (accountId == null)
@@ -43,10 +43,10 @@ namespace ECommerceApi.Services
             {
                 throw new Exception("Account not found");
             }
-            return _mapper.Map<AccountGetDto>(account);
+            return _mapper.Map<ProfileGetDto>(account);
         }
 
-        public async Task<AccountGetDto> UpdateProfileAsync(string token, AccountUpdateDto accountDto)
+        public async Task<ProfileGetDto> UpdateProfileAsync(string token, ProfileUpdateDto profileUpdateDto)
         {
             Guid accountId = Guid.Parse(_tokenService.ValidateTokenAndGetUserId(token));
             if (accountId == null)
@@ -60,11 +60,14 @@ namespace ECommerceApi.Services
             {
                 throw new Exception("Account not found");
             }
-            await _accountService.UpdateAccountAsync(accountId, accountDto);
-            return _mapper.Map<AccountGetDto>(account);
+
+            _mapper.Map(profileUpdateDto, account);
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<ProfileGetDto>(account);
         }
 
-        public async Task<bool> ChangePassword(string token, string oldPassword, string newPassword)
+        public async Task<bool> ChangePassword(string token, ChangePasswordDto changePasswordDto)
         {
             Guid accountId = Guid.Parse(_tokenService.ValidateTokenAndGetUserId(token));
             if (accountId == null)
@@ -79,15 +82,15 @@ namespace ECommerceApi.Services
                 throw new Exception("Account not found");
             }
 
-            if (!_passwordHelper.VerifyPassword(oldPassword, account.Password))
+            if (!_passwordHelper.VerifyPassword(changePasswordDto.OldPassword, account.Password))
             {
                 throw new UnauthorizedAccessException("Invalid password");
             }
 
-            account.Password = _passwordHelper.HashPassword(newPassword);
+            account.Password = _passwordHelper.HashPassword(changePasswordDto.NewPassword);
             await _context.SaveChangesAsync();
             return true;
-
         }
+
     }
 }

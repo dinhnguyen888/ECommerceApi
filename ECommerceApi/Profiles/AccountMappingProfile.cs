@@ -11,8 +11,16 @@ namespace ECommerceApi.Profiles
 
             CreateMap<Account, AccountGetDto>()
                 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.RoleName));
+          
 
             CreateMap<Account, AccountGetForTokenGithub>();
+
+            CreateMap<ProfileUpdateDto, Account>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Password, opt => opt.Ignore())
+                .ForMember(dest => dest.RoleId, opt => opt.Ignore());
+            CreateMap<Account, ProfileGetDto>();
+
 
             CreateMap<Account, TokenGenerateDto>()
                 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.RoleName))
@@ -26,7 +34,9 @@ namespace ECommerceApi.Profiles
            
             CreateMap<AccountUpdateDto, Account>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Password, opt => opt.Ignore()); 
+                .ForMember(dest => dest.Password, opt => opt.Ignore());
+
+           
         }
     }
 }
