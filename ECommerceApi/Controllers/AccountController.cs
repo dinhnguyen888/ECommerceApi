@@ -34,13 +34,7 @@ namespace ECommerceApi.Controllers
             if (account == null) return NotFound();
             return Ok(account);
         }
-        [HttpGet("profiles")]
-        public async Task<IActionResult> GetAccountByToken([FromQuery]string token)
-        {
-            var account = await _accountService.GetAccountByToken(token);
-            if (account == null) return NotFound();
-            return Ok(account);
-        }
+       
 
         [HttpPost]
         [Authorize(Policy = "AdminOnly")]
