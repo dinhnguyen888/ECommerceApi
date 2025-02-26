@@ -182,7 +182,11 @@ builder.Services.AddAuthorization(options =>
 });
 
 
-builder.WebHost.UseUrls("https://*:7202");
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(7202);
+});
+
 var app = builder.Build();
 
 
@@ -197,7 +201,7 @@ using (var scope = app.Services.CreateScope())
 // Middleware setup
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
