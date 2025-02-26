@@ -33,7 +33,7 @@ namespace ECommerceApi.Services
             return _mapper.Map<IEnumerable<PaymentGetDto>>(payments);
         }
 
-        public async Task<IEnumerable<PaymentViewHistoryDto>> ViewPurchaseHistory(string token)
+        public async Task<IEnumerable<PaymentViewHistoryDto>> ViewPaymentHistory(string token)
         {
             Guid accountId = Guid.Parse(_tokenService.ValidateTokenAndGetUserId(token));
             var payments = await _context.Payments.Where(p => p.UserId == accountId).ToListAsync();

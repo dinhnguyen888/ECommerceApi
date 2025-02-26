@@ -6,7 +6,7 @@ namespace ECommerceApi.Interfaces
     public interface IPaymentService
     {
         Task<IEnumerable<PaymentGetDto>> GetAllPaymentsAsync();
-        Task<IEnumerable<PaymentViewHistoryDto>> ViewPurchaseHistory(string token);
+        Task<IEnumerable<PaymentViewHistoryDto>> ViewPaymentHistory(string token);
         Task<string> CreatePaymentAsync(PaymentPostDto payment);
         Task<PaymentGetDto> UpdatePaymentAsync(Guid id, PaymentUpdateDto payment);
         Task<bool> DeletePaymentAsync(int id);
