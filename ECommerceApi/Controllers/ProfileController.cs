@@ -35,7 +35,7 @@ namespace ECommerceApi.Controllers
         }
 
         // Update profile info
-        [HttpPut]
+        [HttpPut("update-profile")]
         public async Task<IActionResult> UpdateProfile(
             [FromHeader(Name = "Authorization")] string token,
             [FromBody] ProfileUpdateDto profileUpdateDto)
@@ -79,7 +79,7 @@ namespace ECommerceApi.Controllers
         }
 
         // Update profile info
-        [HttpPut]
+        [HttpPut("update-avatar")]
         public async Task<IActionResult> UpdateAvatar(
             [FromHeader(Name = "Authorization")] string token,
             [FromBody] string  avatarUrl)
