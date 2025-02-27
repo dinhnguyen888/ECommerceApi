@@ -28,7 +28,7 @@ namespace ECommerceApi.Controllers
             {
                 var createPayosPayment = await _payOS.CreatePaymentLink(body);
 
-                return Ok(createPayosPayment);
+                return Created(createPayosPayment, createPayosPayment);
             }
             catch (Exception exception)
             {

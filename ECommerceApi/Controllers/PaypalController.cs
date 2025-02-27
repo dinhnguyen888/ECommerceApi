@@ -23,8 +23,8 @@ namespace ECommerceApi.Controllers
         {
             try
             {
-                var url = await _payPalService.CreatePaymentInPayPal(dto);
-                return Ok(url);
+                var payUrl = await _payPalService.CreatePaymentInPayPal(dto);
+                return Created(payUrl, payUrl);
             }
             catch (Exception ex)
             {

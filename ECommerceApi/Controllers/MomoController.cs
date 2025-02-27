@@ -29,7 +29,7 @@ public class MomoController : ControllerBase
            var payUrl = await _momoService.CreatePaymentWithMomo(request);
             if (!string.IsNullOrEmpty(payUrl))
             {
-                return Ok(payUrl);
+                return Created(payUrl, payUrl);
             }
 
             return BadRequest("Failed to create a payment request.");
