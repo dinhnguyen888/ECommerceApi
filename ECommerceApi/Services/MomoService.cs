@@ -39,7 +39,7 @@ public class MomoService : IMomoService
                           ?? throw new InvalidOperationException("HttpContext or Request is null");
 
         // Tạo IpnUrl an toàn hơn
-        var scheme = baseRequest.Scheme ?? "https";
+        var scheme = "https";  // baseRequest.Scheme ?? "https" if on localhost
         var host = baseRequest.Host.HasValue ? baseRequest.Host.Value : "localhost";
         IpnUrl = $"{scheme}://{host}/api/Momo/ipn";
     }
