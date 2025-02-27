@@ -34,7 +34,7 @@ namespace ECommerceApi.Controllers
             }
         }
 
-        [HttpGet("/view-payment-history")]
+        [HttpGet("view-payment-history")]
         public async Task<ActionResult<IEnumerable<PaymentViewHistoryDto>>> ViewPaymentHistory([FromHeader(Name = "Authorization")] string token)
         {
             try
