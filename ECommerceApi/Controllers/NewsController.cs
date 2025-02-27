@@ -18,11 +18,17 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAllNews()
+        public IActionResult GetAllNews([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var newsList = _newsService.GetAllNews();
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return BadRequest("Page number and page size must be greater than 0.");
+            }
+
+            var newsList = _newsService.GetNewsWithPagination(pageNumber, pageSize);
             return Ok(newsList);
         }
+
 
         [HttpGet("{id}")]
         public IActionResult GetNewsById(string id)

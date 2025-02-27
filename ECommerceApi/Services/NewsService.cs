@@ -19,6 +19,16 @@ namespace ECommerceApi.Service
             return _newsCollection.Find(news => true).ToList();
         }
 
+        public List<News> GetNewsWithPagination(int pageNumber, int pageSize)
+        {
+            return _newsCollection
+                        .Find(news => true)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Limit(pageSize)
+                        .ToList();
+        }
+
+
         public News GetNewsById(string id)
         {
             return _newsCollection.Find(news => news.Id == id).FirstOrDefault();
