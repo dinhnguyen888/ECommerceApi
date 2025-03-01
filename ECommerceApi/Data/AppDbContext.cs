@@ -19,9 +19,7 @@ public class AppDbContext : DbContext
             .HasForeignKey(a => a.RoleId) 
             .OnDelete(DeleteBehavior.Restrict); 
 
-        modelBuilder.Entity<Account>()
-            .HasIndex(a => a.Name)
-            .IsUnique();
+       
         modelBuilder.Entity<Account>()
             .HasIndex(a => a.Email)
             .IsUnique();
