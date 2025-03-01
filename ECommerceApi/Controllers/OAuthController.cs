@@ -41,7 +41,9 @@ namespace ECommerceApi.Controllers
                 }
 
                 var accessToken = await _oAuthService.ProcessOAuthLogin(authenticateResult);
-                return Ok(new { AccessToken = accessToken });
+                var redirectUrl = $"{_configuration["URL:FrontendUrlOAuthCallback"]}?accessToken={accessToken}";
+
+                return Redirect(redirectUrl);
             }
             catch (Exception ex)
             {
@@ -71,7 +73,9 @@ namespace ECommerceApi.Controllers
                 }
 
                 var accessToken = await _oAuthService.ProcessOAuthLogin(authenticateResult);
-                return Ok(new { AccessToken = accessToken });
+                var redirectUrl = $"{_configuration["URL:FrontendUrlOAuthCallback"]}?accessToken={accessToken}";
+
+                return Redirect(redirectUrl);
             }
             catch (Exception ex)
             {
