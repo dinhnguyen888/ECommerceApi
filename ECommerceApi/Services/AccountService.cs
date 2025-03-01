@@ -113,22 +113,5 @@ namespace ECommerceApi.Services
             return account;
         }
 
-        public async Task<AccountGetDto> GetAccountByToken(string token)
-        {
-            var userId = _tokenService.ValidateTokenAndGetUserId(token);
-            if (userId == null) return null;
-            var profile = await _context.Accounts.FirstOrDefaultAsync(a => a.Id.ToString() == userId);
-            var profileMapping = _mapper.Map<AccountGetDto>(profile);
-
-            return profileMapping;
-        }
-        public async Task<AccountGetForTokenGithub?> GetAccountByName(string name)
-        {
-            var checkAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.Name == name);  
-            if (checkAccount == null) return null;
-            return _mapper.Map<AccountGetForTokenGithub>(checkAccount);
-
-        }
-
     }
 }
