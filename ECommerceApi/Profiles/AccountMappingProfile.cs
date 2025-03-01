@@ -13,7 +13,7 @@ namespace ECommerceApi.Profiles
                 .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.RoleName));
           
 
-            CreateMap<Account, AccountGetForTokenGithub>();
+            //CreateMap<Account, AccountGetForTokenGithub>();
 
             CreateMap<ProfileUpdateDto, Account>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

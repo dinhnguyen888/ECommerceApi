@@ -91,7 +91,6 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<IGitHubService, GitHubService>();
 builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IVnpayService,VnpayService>();
@@ -101,7 +100,7 @@ builder.Services.AddScoped<IMomoService,MomoService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IPayosService, PayosService>();
 builder.Services.AddScoped<IPayPalService, PayPalService>();
-builder.Services.AddScoped<IGoogleService, GoogleService>();
+builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddScoped<INewsService, NewsService>();
 builder.Services.AddScoped<ICrawNewsService, CrawNewsService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
@@ -147,29 +146,22 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 })
-.AddCookie("Cookies", options =>
+.AddCookie("Cookies")
+.AddGoogle(options =>
 {
-    options.LoginPath = "/api/Oauth/login";
-
+    options.ClientId = builder.Configuration["Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Google:ClientSecret"];
+    options.SaveTokens = true;
 })
-.AddOAuth("GitHub", opt =>
+.AddGitHub(option =>
 {
-    opt.ClientId = builder.Configuration["Github:ClientId"];
-    opt.ClientSecret = builder.Configuration["Github:ClientSecret"];
-    opt.CallbackPath = new PathString("/api/OAuth/github-login");
-    opt.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
-    opt.TokenEndpoint = "https://github.com/login/oauth/access_token";
-    opt.UserInformationEndpoint = "https://api.github.com/user";
-    opt.SaveTokens = true;
+    option.ClientId = builder.Configuration["Github:ClientId"];
+    option.ClientSecret = builder.Configuration["Github:ClientSecret"];
+    option.CallbackPath = new PathString("/api/OAuth/github-embedded");
+    option.Scope.Add("user:email");
+    option.SaveTokens = true;
 
-    opt.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
-    opt.ClaimActions.MapJsonKey(ClaimTypes.Name, "login");
-    opt.ClaimActions.MapJsonKey("urn:github:name", "name");
-    opt.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
-    opt.ClaimActions.MapJsonKey("urn:github:url", "html_url");
-}
-
-)
+});
 ;
 
 builder.Services.AddAuthorization(options =>

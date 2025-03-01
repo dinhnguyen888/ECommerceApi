@@ -124,8 +124,8 @@ namespace ECommerceApi.Services
             if (account == null) throw new Exception("account not found");
             var subject = "Thanh toán thành công!! Phần mềm của bạn đã sẵn sàng.";
             var body = $@"
-                    Bạn vừa đặt mua phần mềm {paymentResult.ProductPay} với giá {paymentResult.ProductPrice} vào ngày {paymentResult.PaymentDate}.\n
-                    Vui lòng click vào đường link bên dưới để tải:\n
+                    Bạn vừa đặt mua phần mềm {paymentResult.ProductPay} với giá {paymentResult.ProductPrice} vào ngày {paymentResult.PaymentDate}.
+                    Vui lòng click vào đường link bên dưới để tải:
                     {productURL}";
 
 
