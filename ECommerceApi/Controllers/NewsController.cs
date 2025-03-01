@@ -1,6 +1,7 @@
 ﻿using ECommerceApi.Interfaces;
 using ECommerceApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace ECommerceApi.Controllers
 {
@@ -18,22 +19,21 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAllNews([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAllNews([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             if (pageNumber <= 0 || pageSize <= 0)
             {
                 return BadRequest("Page number and page size must be greater than 0.");
             }
 
-            var newsList = _newsService.GetNewsWithPagination(pageNumber, pageSize);
+            var newsList = await _newsService.GetNewsWithPaginationAsync(pageNumber, pageSize);
             return Ok(newsList);
         }
 
-
         [HttpGet("{id}")]
-        public IActionResult GetNewsById(string id)
+        public async Task<IActionResult> GetNewsById(string id)
         {
-            var news = _newsService.GetNewsById(id);
+            var news = await _newsService.GetNewsByIdAsync(id);
 
             if (news == null)
             {
@@ -44,65 +44,64 @@ namespace ECommerceApi.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddNews([FromBody] News news)
+        public async Task<IActionResult> AddNews([FromBody] News news)
         {
             if (news == null)
             {
                 return BadRequest("Invalid news data.");
             }
 
-            _newsService.AddNews(news);
+            await _newsService.AddNewsAsync(news);
             return Ok("News added successfully.");
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateNews(string id, [FromBody] News updatedNews)
+        public async Task<IActionResult> UpdateNews(string id, [FromBody] News updatedNews)
         {
-            var news = _newsService.GetNewsById(id);
+            var news = await _newsService.GetNewsByIdAsync(id);
 
             if (news == null)
             {
                 return NotFound("News not found.");
             }
 
-            _newsService.UpdateNews(id, updatedNews);
+            await _newsService.UpdateNewsAsync(id, updatedNews);
             return Ok("News updated successfully.");
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteNews(string id)
+        public async Task<IActionResult> DeleteNews(string id)
         {
-            var news = _newsService.GetNewsById(id);
+            var news = await _newsService.GetNewsByIdAsync(id);
 
             if (news == null)
             {
                 return NotFound("News not found.");
             }
 
-            _newsService.DeleteNews(id);
+            await _newsService.DeleteNewsAsync(id);
             return Ok("News deleted successfully.");
         }
 
         // Craw data
         [HttpGet("crawl")]
-        public IActionResult StartCrawling([FromQuery] int totalCrawlingPage)
+        public async Task<IActionResult> StartCrawling([FromQuery] int totalCrawlingPage)
         {
             if (totalCrawlingPage <= 0)
             {
                 return BadRequest("Total crawling page must be greater than 0.");
             }
 
-            _crawNewsService.StartCrawling(totalCrawlingPage);
+            await _crawNewsService.StartCrawlingAsync(totalCrawlingPage);
             return Ok("Crawling process started successfully.");
         }
 
         // Craw latest data from VNExpress
         [HttpGet("latest")]
-        public IActionResult GetLatestNews()
+        public async Task<IActionResult> GetLatestNews()
         {
-            _crawNewsService.GetLatestData();
+            await _crawNewsService.GetLatestDataAsync();
             return Ok("Latest news has been crawled and saved to MongoDB.");
         }
-
     }
 }

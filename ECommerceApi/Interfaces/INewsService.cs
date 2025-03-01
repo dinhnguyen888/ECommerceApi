@@ -1,15 +1,16 @@
 ﻿using ECommerceApi.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ECommerceApi.Interfaces
 {
     public interface INewsService
     {
-        List<News> GetAllNews();
-        List<News> GetNewsWithPagination(int pageNumber, int pageSize);
-        News GetNewsById(string id);
-        void AddNews(News news);
-        void UpdateNews(string id, News updatedNews);
-        void DeleteNews(string id);
+        Task<List<News>> GetAllNewsAsync();
+        Task<List<News>> GetNewsWithPaginationAsync(int pageNumber, int pageSize);
+        Task<News> GetNewsByIdAsync(string id);
+        Task AddNewsAsync(News news);
+        Task UpdateNewsAsync(string id, News updatedNews);
+        Task DeleteNewsAsync(string id);
     }
 }

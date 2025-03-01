@@ -3,9 +3,9 @@ using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using ECommerceApi.Models;
 using MongoDB.Driver;
-using Microsoft.EntityFrameworkCore;
 using ECommerceApi.Interfaces;
 
 namespace ECommerceApi.Service
@@ -22,7 +22,7 @@ namespace ECommerceApi.Service
             _newsCollection = dbContext.GetCollection<News>("News");
         }
 
-        public void StartCrawling(int totalCrawlingPage)
+        public async Task StartCrawlingAsync(int totalCrawlingPage)
         {
             try
             {
@@ -30,21 +30,21 @@ namespace ECommerceApi.Service
                 {
                     var requestUrl = baseUrl + $"{section}";
                     Console.WriteLine($"Loading URL: {requestUrl}");
-                    var document = LoadDocument(requestUrl);
+                    var document = await LoadDocumentAsync(requestUrl);
                     Console.WriteLine("Page loaded successfully.");
 
                     for (var i = 1; i <= totalCrawlingPage; i++)
                     {
                         var requestPerPage = baseUrl + $"{section}-p{i}";
                         Console.WriteLine($"Processing page {i}: {requestPerPage}");
-                        var documentForListItem = LoadDocument(requestPerPage);
+                        var documentForListItem = await LoadDocumentAsync(requestPerPage);
 
                         var listNodeProductItem = documentForListItem.DocumentNode.QuerySelectorAll(".item-news.thumb-left.item-news-common");
                         if (listNodeProductItem != null)
                         {
                             foreach (var node in listNodeProductItem)
                             {
-                                var newsItem = ParseNewsItem(node, section);
+                                var newsItem = await ParseNewsItemAsync(node, section);
 
                                 if (newsItem != null)
                                 {
@@ -69,29 +69,28 @@ namespace ECommerceApi.Service
             }
         }
 
-        public void GetLatestData()
+        public async Task GetLatestDataAsync()
         {
             try
             {
                 foreach (var section in sectionList)
                 {
                     var requestUrl = baseUrl + $"{section}";
-                    var document = LoadDocument(requestUrl);
+                    var document = await LoadDocumentAsync(requestUrl);
                     var latestNode = document.DocumentNode.QuerySelector(".item-news.thumb-left.item-news-common:first-child");
 
                     if (latestNode != null)
                     {
-                        var latestNews = ParseNewsItem(latestNode, section);
+                        var latestNews = await ParseNewsItemAsync(latestNode, section);
 
                         if (latestNews != null)
                         {
-                            var existingNews = _newsCollection.Find(n => n.LinkDetail == latestNews.LinkDetail).FirstOrDefault();
+                            var existingNews = await _newsCollection.Find(n => n.LinkDetail == latestNews.LinkDetail).FirstOrDefaultAsync();
 
                             if (existingNews == null)
                             {
-                                _newsCollection.InsertOne(latestNews);
+                                await _newsCollection.InsertOneAsync(latestNews);
                                 Console.WriteLine("Inserted latest data into MongoDB.");
-
                             }
                             else
                             {
@@ -112,17 +111,17 @@ namespace ECommerceApi.Service
             }
         }
 
-        private HtmlDocument LoadDocument(string url)
+        private async Task<HtmlDocument> LoadDocumentAsync(string url)
         {
             var web = new HtmlWeb()
             {
                 AutoDetectEncoding = false,
                 OverrideEncoding = Encoding.UTF8
             };
-            return web.Load(url);
+            return await Task.Run(() => web.Load(url));
         }
 
-        private News ParseNewsItem(HtmlNode node, string category)
+        private async Task<News> ParseNewsItemAsync(HtmlNode node, string category)
         {
             var thumbArtNode = node.QuerySelector(".thumb-art > a");
             var thumbImgNode = node.QuerySelector(".thumb-art > a > picture > img");
@@ -136,7 +135,6 @@ namespace ECommerceApi.Service
                 return null;
             }
 
-            // Check if linkDetail is full link or not
             var fullDetailLink = linkDetail.StartsWith("http") ? linkDetail : baseUrl + linkDetail;
 
             var newsItem = new News()
@@ -148,12 +146,10 @@ namespace ECommerceApi.Service
                 Description = description?.RemoveBreakLineTab()
             };
 
-            // Check if the news item already exists in MongoDB
-            var existingNews = _newsCollection.Find(n => n.LinkDetail == fullDetailLink).FirstOrDefault();
+            var existingNews = await _newsCollection.Find(n => n.LinkDetail == fullDetailLink).FirstOrDefaultAsync();
             if (existingNews == null)
             {
-                // If not exists, insert new news item
-                _newsCollection.InsertOne(newsItem);
+                await _newsCollection.InsertOneAsync(newsItem);
                 Console.WriteLine("News item saved to MongoDB.");
             }
             else
@@ -163,7 +159,6 @@ namespace ECommerceApi.Service
 
             return newsItem;
         }
-
     }
 }
 

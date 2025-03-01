@@ -2,6 +2,7 @@
 using ECommerceApi.Models;
 using MongoDB.Driver;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ECommerceApi.Service
 {
@@ -14,39 +15,38 @@ namespace ECommerceApi.Service
             _newsCollection = dbContext.GetCollection<News>("News");
         }
 
-        public List<News> GetAllNews()
+        public async Task<List<News>> GetAllNewsAsync()
         {
-            return _newsCollection.Find(news => true).ToList();
+            return await _newsCollection.Find(news => true).ToListAsync();
         }
 
-        public List<News> GetNewsWithPagination(int pageNumber, int pageSize)
+        public async Task<List<News>> GetNewsWithPaginationAsync(int pageNumber, int pageSize)
         {
-            return _newsCollection
-                        .Find(news => true)
-                        .Skip((pageNumber - 1) * pageSize)
-                        .Limit(pageSize)
-                        .ToList();
+            return await _newsCollection
+                            .Find(news => true)
+                            .Skip((pageNumber - 1) * pageSize)
+                            .Limit(pageSize)
+                            .ToListAsync();
         }
 
-
-        public News GetNewsById(string id)
+        public async Task<News> GetNewsByIdAsync(string id)
         {
-            return _newsCollection.Find(news => news.Id == id).FirstOrDefault();
+            return await _newsCollection.Find(news => news.Id == id).FirstOrDefaultAsync();
         }
 
-        public void AddNews(News news)
+        public async Task AddNewsAsync(News news)
         {
-            _newsCollection.InsertOne(news);
+            await _newsCollection.InsertOneAsync(news);
         }
 
-        public void UpdateNews(string id, News updatedNews)
+        public async Task UpdateNewsAsync(string id, News updatedNews)
         {
-            _newsCollection.ReplaceOne(news => news.Id == id, updatedNews);
+            await _newsCollection.ReplaceOneAsync(news => news.Id == id, updatedNews);
         }
 
-        public void DeleteNews(string id)
+        public async Task DeleteNewsAsync(string id)
         {
-            _newsCollection.DeleteOne(news => news.Id == id);
+            await _newsCollection.DeleteOneAsync(news => news.Id == id);
         }
     }
 }

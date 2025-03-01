@@ -1,8 +1,10 @@
-﻿namespace ECommerceApi.Interfaces
+﻿using System.Threading.Tasks;
+
+namespace ECommerceApi.Interfaces
 {
     public interface ICrawNewsService
     {
-        void StartCrawling(int totalCrawlingPage);
-        void GetLatestData();
+        Task StartCrawlingAsync(int totalCrawlingPage);
+        Task GetLatestDataAsync();
     }
 }
