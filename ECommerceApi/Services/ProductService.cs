@@ -2,6 +2,7 @@
 using ECommerceApi.Dtos;
 using ECommerceApi.Interfaces;
 using ECommerceApi.Models;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -24,22 +25,22 @@ public class ProductService : IProductService
         return newProduct.Id;
     }
 
-    public async Task<IEnumerable<ProductGetDto>> GetProductsByPageAsync(int page, int pageSize)
+    public async Task<(List<ProductGetDto> products, long totalProducts)> GetProductsAsync(int page, int pageSize)
     {
         var skip = (page - 1) * pageSize;
 
-        var products = await _productCollection.Find(_ => true)
-                                               .Skip(skip)
-                                               .Limit(pageSize)
-                                               .ToListAsync();
+       
+        var countTask = _productCollection.CountDocumentsAsync(_ => true);
+        var productsTask = _productCollection.Find(_ => true)
+                                             .Skip(skip)
+                                             .Limit(pageSize)
+                                             .ToListAsync();
 
-        return _mapper.Map<IEnumerable<ProductGetDto>>(products);
+        await Task.WhenAll(countTask, productsTask); 
+
+        return (_mapper.Map<List<ProductGetDto>>(productsTask.Result), countTask.Result);
     }
 
-    public async Task<int> GetTotalProductsAsync()
-    {
-        return (int)await _productCollection.CountDocumentsAsync(_ => true);
-    }
 
     public async Task<ProductGetDto> GetProductByIdAsync(string id)
     {
@@ -67,7 +68,7 @@ public class ProductService : IProductService
         var result = await _productCollection.DeleteOneAsync(p => p.Id == id);
         return result.DeletedCount > 0;
     }
-    public async Task<ProductGetDetailDto> GetSpecificationInProduct(string id)
+    public async Task<ProductGetDetailDto> GetProductDetail(string id)
     {
         var product = await _productCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
         return _mapper.Map<ProductGetDetailDto>(product);
@@ -82,22 +83,37 @@ public class ProductService : IProductService
 
         return _mapper.Map<List<ProductGetDto>>(randomProducts);
     }
-    public async Task<List<ProductGetDto>> GetProductsByTagAsync(string tag)
+    public async Task<(List<ProductGetDto> products, long totalProducts)> GetProductsByTagAsync(string tag, int page, int pageSize)
     {
-        var products = await _productCollection.Find(p => p.Tag == tag).ToListAsync();
-        return _mapper.Map<List<ProductGetDto>>(products);
+        var skip = (page - 1) * pageSize;
+
+        // Đếm tổng số sản phẩm có tag
+        var totalProducts = await _productCollection.CountDocumentsAsync(p => p.Tag == tag);
+
+        // Lấy danh sách sản phẩm theo trang
+        var products = await _productCollection.Find(p => p.Tag == tag)
+                                               .Skip(skip)
+                                               .Limit(pageSize)
+                                               .ToListAsync();
+
+        return (_mapper.Map<List<ProductGetDto>>(products), totalProducts);
     }
 
-    public async Task<List<ProductGetDto>> SearchProductsAsync(string keyword)
+
+    public async Task<List<ProductGetDto>> SearchProductsAsync(string keyword, int page, int pageSize)
     {
-      
+        var skip = (page - 1) * pageSize;
+
         var filter = Builders<Product>.Filter.Or(
             Builders<Product>.Filter.Regex(p => p.Title, new BsonRegularExpression(keyword, "i")), //regardless of case
             Builders<Product>.Filter.Regex(p => p.Description, new BsonRegularExpression(keyword, "i")),
             Builders<Product>.Filter.Regex(p => p.Tag, new BsonRegularExpression(keyword, "i"))
         );
 
-        var products = await _productCollection.Find(filter).ToListAsync();
+        var products = await _productCollection.Find(filter)
+                                               .Skip(skip)
+                                               .Limit(pageSize)
+                                               .ToListAsync();
         return _mapper.Map<List<ProductGetDto>>(products);
     }
 

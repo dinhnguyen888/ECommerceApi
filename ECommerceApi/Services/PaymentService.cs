@@ -27,11 +27,19 @@ namespace ECommerceApi.Services
             _tokenService = tokenService;
         }
 
-        public async Task<IEnumerable<PaymentGetDto>> GetAllPaymentsAsync()
+        public async Task<(List<PaymentGetDto> payments, int totalPayments)> GetPaymentsAsync(int page, int pageSize)
         {
-            var payments = await _context.Payments.ToListAsync();
-            return _mapper.Map<IEnumerable<PaymentGetDto>>(payments);
+            var skip = (page - 1) * pageSize;
+
+            var totalPayments = await _context.Payments.CountAsync(); // Đếm tổng số bản ghi
+            var payments = await _context.Payments
+                                         .Skip(skip)
+                                         .Take(pageSize)
+                                         .ToListAsync();
+
+            return (_mapper.Map<List<PaymentGetDto>>(payments), totalPayments);
         }
+
 
         public async Task<IEnumerable<PaymentViewHistoryDto>> ViewPaymentHistory(string token)
         {

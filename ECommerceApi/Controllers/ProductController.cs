@@ -15,7 +15,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 12)
+    public async Task<IActionResult> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 6)
     {
         try
         {
@@ -24,15 +24,13 @@ public class ProductsController : ControllerBase
                 return BadRequest("Page and pageSize must be greater than 0.");
             }
 
-            var totalProducts = await _productService.GetTotalProductsAsync();
+            var (products, totalProducts) = await _productService.GetProductsAsync(page, pageSize);
             var totalPages = (int)Math.Ceiling(totalProducts / (double)pageSize);
 
             if (page > totalPages && totalPages > 0)
             {
                 return NotFound("Page number exceeds total pages.");
             }
-
-            var products = await _productService.GetProductsByPageAsync(page, pageSize);
 
             return Ok(new
             {
@@ -152,7 +150,7 @@ public class ProductsController : ControllerBase
     {
         try
         {
-            var product = await _productService.GetSpecificationInProduct(id);
+            var product = await _productService.GetProductDetail(id);
 
             if (product == null)
             {
@@ -167,40 +165,36 @@ public class ProductsController : ControllerBase
         }
     }
 
-    [HttpGet("related/")]
-    public async Task<IActionResult> GetRelatedProduct()
+    [HttpGet("tag/")]
+    public async Task<IActionResult> GetProductByTag([FromQuery] string tag, [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
     {
         try
         {
-            var product = await _productService.GetRelatedProduct();
-            return Ok(product);
+            var (products, totalProducts) = await _productService.GetProductsByTagAsync(tag, page, pageSize);
+            var totalPages = (int)Math.Ceiling(totalProducts / (double)pageSize);
+
+            return Ok(new
+            {
+                currentPage = page,
+                pageSize,
+                totalProducts,
+                totalPages,
+                products
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "An error occurred while fetching the product.", error = ex.Message });
+            return StatusCode(500, new { message = "An error occurred while fetching the products.", error = ex.Message });
         }
     }
 
-    [HttpGet("tag/")]
-    public async Task<IActionResult> GetProductByTag([FromQuery] string tag)
-    {
-        try
-        {
-            var product = await _productService.GetProductsByTagAsync(tag);
-            return Ok(product);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = "An error occurred while fetching the product.", error = ex.Message });
-        }
-    }
 
     [HttpGet("search/")]
-    public async Task<IActionResult> SearchProduct([FromQuery] string keyword)
+    public async Task<IActionResult> SearchProduct([FromQuery] string keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
     {
         try
         {
-            var product = await _productService.SearchProductsAsync(keyword);
+            var product = await _productService.SearchProductsAsync(keyword, page, pageSize);
             return Ok(product);
         }
         catch (Exception ex)

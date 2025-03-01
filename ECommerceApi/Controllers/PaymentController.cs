@@ -21,18 +21,39 @@ namespace ECommerceApi.Controllers
 
         [HttpGet]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<ActionResult<IEnumerable<PaymentGetDto>>> GetAllPayments()
+        [HttpGet]
+        public async Task<IActionResult> GetAllPayments([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var payments = await _paymentService.GetAllPaymentsAsync();
-                return Ok(payments);
+                if (page < 1 || pageSize < 1)
+                {
+                    return BadRequest("Page and pageSize must be greater than 0.");
+                }
+
+                var (payments, totalPayments) = await _paymentService.GetPaymentsAsync(page, pageSize);
+                var totalPages = (int)Math.Ceiling(totalPayments / (double)pageSize);
+
+                if (page > totalPages && totalPages > 0)
+                {
+                    return NotFound("Page number exceeds total pages.");
+                }
+
+                return Ok(new
+                {
+                    currentPage = page,
+                    pageSize,
+                    totalPayments,
+                    totalPages,
+                    payments
+                });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { Message = "An error occurred while retrieving payments.", Error = ex.Message });
             }
         }
+
 
         [HttpGet("view-payment-history")]
         public async Task<ActionResult<IEnumerable<PaymentViewHistoryDto>>> ViewPaymentHistory([FromHeader(Name = "Authorization")] string token)

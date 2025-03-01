@@ -29,10 +29,18 @@ namespace ECommerceApi.Services
             _configuration = configuration;
         }
 
-        public async Task<IEnumerable<AccountGetDto>> GetAllAccountsAsync()
+        public async Task<(List<AccountGetDto> accounts, int totalAccounts)> GetAccountsAsync(int page, int pageSize)
         {
-            var accounts = await _context.Set<Account>().Include(a => a.Role).ToListAsync();
-            return _mapper.Map<IEnumerable<AccountGetDto>>(accounts);
+            var skip = (page - 1) * pageSize;
+
+            var totalAccounts = await _context.Set<Account>().CountAsync(); // Đếm tổng số tài khoản
+            var accounts = await _context.Set<Account>()
+                                         .Include(a => a.Role)
+                                         .Skip(skip)
+                                         .Take(pageSize)
+                                         .ToListAsync();
+
+            return (_mapper.Map<List<AccountGetDto>>(accounts), totalAccounts);
         }
 
         public async Task<AccountGetDto> GetAccountByIdAsync(Guid id)

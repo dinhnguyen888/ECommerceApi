@@ -3,16 +3,14 @@ using ECommerceApi.Models;
 
 public interface IProductService
 {
-    Task<IEnumerable<ProductGetDto>> GetProductsByPageAsync(int page, int pageSize);
-    Task<int> GetTotalProductsAsync();
+    Task<(List<ProductGetDto> products, long totalProducts)> GetProductsAsync(int page, int pageSize);
     Task<ProductGetDto> GetProductByIdAsync(string id);
     Task<string> AddProductAsync(ProductPostDto product);
     Task<bool> UpdateProductAsync(string id, ProductUpdateDto updatedProduct);
     Task<bool> DeleteProductAsync(string id);
-    Task<ProductGetDetailDto> GetSpecificationInProduct(string id);
-    Task<List<ProductGetDto>> GetRelatedProduct();
-    Task<List<ProductGetDto>> GetProductsByTagAsync(string tag);
-    Task<List<ProductGetDto>> SearchProductsAsync(string keyword);
+    Task<ProductGetDetailDto> GetProductDetail(string id);
+    Task<(List<ProductGetDto> products, long totalProducts)> GetProductsByTagAsync(string tag, int page, int pageSize);
+    Task<List<ProductGetDto>> SearchProductsAsync(string keyword, int page, int pageSize);
     Task<string> GetProductUrlByIdAsync(string productId);
     
     Task<Product> GetProductForUpdating(string id);

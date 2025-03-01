@@ -7,7 +7,7 @@ namespace ECommerceApi.Interfaces
 {
     public interface IAccountService
     {
-        Task<IEnumerable<AccountGetDto>> GetAllAccountsAsync();
+        Task<(List<AccountGetDto> accounts, int totalAccounts)> GetAccountsAsync(int page, int pageSize);
         Task<AccountGetDto> GetAccountByIdAsync(Guid id);
         Task<AccountGetDto> CreateAccountAsync(AccountPostDto accountDto);
         Task<AccountGetDto> UpdateAccountAsync(Guid id, AccountUpdateDto accountDto);
