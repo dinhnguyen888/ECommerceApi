@@ -5,6 +5,7 @@ public interface IProductService
 {
     Task<(List<ProductGetDto> products, long totalProducts)> GetProductsAsync(int page, int pageSize);
     Task<ProductGetDto> GetProductByIdAsync(string id);
+    Task<List<ProductGetDto>> GetMultipleProductByTag(List<ProductTagRequestDto> tagRequests);
     Task<string> AddProductAsync(ProductPostDto product);
     Task<bool> UpdateProductAsync(string id, ProductUpdateDto updatedProduct);
     Task<bool> DeleteProductAsync(string id);

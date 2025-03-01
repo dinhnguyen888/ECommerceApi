@@ -25,6 +25,23 @@ public class ProductService : IProductService
         return newProduct.Id;
     }
 
+    public async Task<List<ProductGetDto>> GetMultipleProductByTag(List<ProductTagRequestDto> tagRequests)
+    {
+        var result = new List<ProductGetDto>();
+
+        foreach (var tagRequest in tagRequests)
+        {
+            var products = await _productCollection.Find(p => p.Tag == tagRequest.Tag)
+                                                   .Limit(tagRequest.Limit)
+                                                   .ToListAsync();
+
+            result.AddRange(_mapper.Map<List<ProductGetDto>>(products));
+        }
+
+        return result;
+    }
+
+
     public async Task<(List<ProductGetDto> products, long totalProducts)> GetProductsAsync(int page, int pageSize)
     {
         var skip = (page - 1) * pageSize;
@@ -122,6 +139,7 @@ public class ProductService : IProductService
         var product = await _productCollection.Find(p => p.Id == productId).FirstOrDefaultAsync();
         return product?.ProductUrl ?? string.Empty; 
     }
+
 
     public async Task<Product> GetProductForUpdating(string id)
     {

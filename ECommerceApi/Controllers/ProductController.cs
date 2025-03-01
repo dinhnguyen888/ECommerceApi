@@ -188,6 +188,25 @@ public class ProductsController : ControllerBase
         }
     }
 
+    [HttpPost("multiple-product-by-tags")]
+    public async Task<IActionResult> GetProductsByTags([FromBody] List<ProductTagRequestDto> tagRequests)
+    {
+        try
+        {
+            if (tagRequests == null || tagRequests.Count == 0)
+            {
+                return BadRequest("Invalid request data.");
+            }
+
+            var products = await _productService.GetMultipleProductByTag(tagRequests);
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while fetching products.", error = ex.Message });
+        }
+    }
+
 
     [HttpGet("search/")]
     public async Task<IActionResult> SearchProduct([FromQuery] string keyword, [FromQuery] int page = 1, [FromQuery] int pageSize = 6)
