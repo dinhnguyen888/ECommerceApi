@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Net.payOS;
 using ECommerceApi.Service;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -151,6 +152,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.ClientId = builder.Configuration["Google:ClientId"];
     options.ClientSecret = builder.Configuration["Google:ClientSecret"];
+    options.CallbackPath = new PathString("/api/OAuth/google-embedded");
     options.SaveTokens = true;
 })
 .AddGitHub(option =>
@@ -180,7 +182,18 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 var app = builder.Build();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor
+});
 
+// Debug log
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"Scheme: {context.Request.Scheme}");
+    Console.WriteLine($"X-Forwarded-Proto: {context.Request.Headers["X-Forwarded-Proto"]}");
+    await next();
+});
 
 using (var scope = app.Services.CreateScope())
 {
