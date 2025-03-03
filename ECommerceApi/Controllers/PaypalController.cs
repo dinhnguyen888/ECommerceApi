@@ -12,10 +12,12 @@ namespace ECommerceApi.Controllers
     public class PayPalController : Controller
     {
         private readonly IPayPalService _payPalService;
+        private readonly IConfiguration _configuration;
 
-        public PayPalController(IPayPalService payPalService)
+        public PayPalController(IPayPalService payPalService, IConfiguration configuration)
         {
             _payPalService = payPalService;
+            _configuration = configuration;
         }
 
         [HttpPost("create-paypal-payment")]
@@ -39,7 +41,7 @@ namespace ECommerceApi.Controllers
             try
             {
                 await _payPalService.PaypalCallbackHandle(Request.Query);
-                return Ok();
+                return Redirect(_configuration["URL:FrontendUrlPaymentCallback"]);
             }
             catch (Exception ex)
             {
