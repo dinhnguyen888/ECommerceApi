@@ -52,24 +52,34 @@ namespace ECommerceApi.Services
 
         public async Task<AccountGetDto> CreateAccountAsync(AccountPostDto accountDto)
         {
+            Role role;
 
-            // Check role exist or not.if not create new role
-            var role = await _context.Roles.SingleOrDefaultAsync(r => r.RoleName == "User");
-
-            if (role == null)
+            if (accountDto.RoleId == 0) // If RoleId is not provided or invalid, set default role to "User"
             {
-                role = new Role {  RoleName = "User" };
-                _context.Roles.Add(role);
-                await _context.SaveChangesAsync();
+                role = await _context.Roles.SingleOrDefaultAsync(r => r.RoleName == "User");
+
+                if (role == null)
+                {
+                    throw new Exception("Default role 'User' does not exist!");
+                }
+            }
+            else
+            {
+                role = await _context.Roles.SingleOrDefaultAsync(r => r.Id == accountDto.RoleId);
+
+                if (role == null)
+                {
+                    throw new Exception("Role does not exist!");
+                }
             }
 
             var account = _mapper.Map<Account>(accountDto);
             account.Id = Guid.NewGuid();
             account.RoleId = role.Id;
-            var defaultPassword = _configuration["DefaultPassword:User"];
 
-            // Process default password
-            var rawPassword = accountDto.Password.IsNullOrEmpty() ? defaultPassword : accountDto.Password;
+            // Get the default password from config if no password is provided in the request
+            var defaultPassword = _configuration["DefaultPassword:User"];
+            var rawPassword = string.IsNullOrEmpty(accountDto.Password) ? defaultPassword : accountDto.Password;
             account.Password = _passwordHelper.HashPassword(rawPassword);
 
             using (var transaction = await _context.Database.BeginTransactionAsync())
@@ -89,6 +99,9 @@ namespace ECommerceApi.Services
 
             return _mapper.Map<AccountGetDto>(account);
         }
+
+
+
 
 
         public async Task<AccountGetDto> UpdateAccountAsync(Guid id, AccountUpdateDto accountDto)
