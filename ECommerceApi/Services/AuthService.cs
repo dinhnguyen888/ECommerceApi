@@ -56,6 +56,14 @@ namespace ECommerceApi.Services
         //register method
         public async Task<bool> RegisterAsync(AccountPostDto account)
         {
+            string roleName = "User";
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == roleName);
+            if (role == null)
+            {
+                throw new UnauthorizedAccessException("Role name does not init in database.");
+            }
+            account.RoleId = role.Id;
+
             var existingAccount = await _accountService.CheckLegitAccount(account.Email);
             if (existingAccount != null)
             {
