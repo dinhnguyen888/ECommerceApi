@@ -95,8 +95,8 @@ namespace ECommerceApi.Services
 
         public async Task<string> CreatePaymentUrl(string paymentId, double price, string productId, string productName)
         {
-            var envProd = new LiveEnvironment(_configuration["Paypal:ClientId"], _configuration["Paypal:SecretKey"]);
-            var client = new PayPalHttpClient(envProd);
+            var envSandbox = new SandboxEnvironment(_configuration["Paypal:ClientId"], _configuration["Paypal:SecretKey"]);
+            var client = new PayPalHttpClient(envSandbox);
             var paypalOrderId = paymentId;
             var baseRequest = _httpContextAccessor.HttpContext?.Request;
 
