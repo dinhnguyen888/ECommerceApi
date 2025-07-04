@@ -1,7 +1,10 @@
 # API Thương Mại Điện Tử
 
 API backend mạnh mẽ được xây dựng bằng .NET 8.0, cung cấp đầy đủ tính năng để quản lý cửa hàng trực tuyến.
+## 💻 Các Repository Liên Quan
 
+-   Repository Frontend: [E-commerce Frontend](https://github.com/dinhnguyen888/e-commerce-website.git)
+-   Repository Admin Panel: [E-commerce Admin Panel](https://github.com/dinhnguyen888/e-commerce-admin.git)
 ## 🛠 Công Nghệ Sử Dụng
 
 -   **Framework**: .NET 8.0
@@ -88,10 +91,7 @@ API backend mạnh mẽ được xây dựng bằng .NET 8.0, cung cấp đầy 
 -   Kiểm soát truy cập theo vai trò
 -   Xử lý thanh toán an toàn
 
-## 💻 Các Repository Liên Quan
 
--   Repository Frontend: [E-commerce Frontend](https://github.com/dinhnguyen888/e-commerce-website.git)
--   Repository Admin Panel: [E-commerce Admin Panel](https://github.com/dinhnguyen888/e-commerce-admin.git)
 
 ## 🚀 Chi Tiết API
 
