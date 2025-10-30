@@ -15,5 +15,8 @@ namespace ECommerce.AuthService.Application.Interfaces
 
         Task ChangePasswordAsync(ChangePasswordDto dto);
         Task DeactivateAccountAsync(DeactivateAccountDto dto);
+
+        Task ChangePasswordAsAdminAsync(AdminChangePasswordDto dto);
+        Task SetActiveAsAdminAsync(AdminSetActiveDto dto);
     }
 }

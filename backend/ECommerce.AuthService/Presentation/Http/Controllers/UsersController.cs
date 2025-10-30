@@ -16,7 +16,7 @@ namespace ECommerce.AuthService.Presentation.Http.Controllers
             _userService = userService;
         }
 
-        // Admin 
+        // Admin only
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
@@ -108,7 +108,7 @@ namespace ECommerce.AuthService.Presentation.Http.Controllers
             }
         }
 
-        // Danh cho client dung de thay doi mat khau va xoa tai khoan
+        // Self-service
         [HttpPost("change-password")]
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
@@ -144,6 +144,45 @@ namespace ECommerce.AuthService.Presentation.Http.Controllers
             catch (System.UnauthorizedAccessException ex)
             {
                 return Unauthorized(new { message = ex.Message });
+            }
+            catch (System.ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // Admin actions
+        [HttpPost("admin/change-password")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ChangePasswordAsAdmin([FromBody] AdminChangePasswordDto dto)
+        {
+            try
+            {
+                await _userService.ChangePasswordAsAdminAsync(dto);
+                return Ok();
+            }
+            catch (System.ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("admin/set-active")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SetActiveAsAdmin([FromBody] AdminSetActiveDto dto)
+        {
+            try
+            {
+                await _userService.SetActiveAsAdminAsync(dto);
+                return Ok();
             }
             catch (System.ArgumentException ex)
             {
