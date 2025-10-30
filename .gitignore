@@ -365,3 +365,5 @@ FodyWeavers.xsd
 /ECommerceApi/appsettings.json
 /ECommerceApi/nginx.conf
 /ECommerceApi/nginx.conf
+backend/ECommerce.AuthService/appsettings.json
+backend/ECommerce.AuthService/appsettings.json
