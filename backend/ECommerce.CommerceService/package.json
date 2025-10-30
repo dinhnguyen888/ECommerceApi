@@ -1,0 +1,20 @@
+{
+  "name": "ecommerce.commerceservice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc --build",
+    "clean": "tsc --build --clean"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "eslint": "^9.38.0",
+    "typescript": "^5.9.3"
+  }
+}
