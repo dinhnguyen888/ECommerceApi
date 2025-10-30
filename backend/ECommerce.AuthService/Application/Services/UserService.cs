@@ -33,7 +33,7 @@ namespace ECommerce.AuthService.Application.Services
 
         public async Task<UserDto> GetByIdAsync(string id)
         {
-            var user = await _userRepo.GetByIdAsync(id) ?? throw new ArgumentException("User not found");
+            var user = await GetUserOrThrow(id);
             return _mapper.Map<UserDto>(user);
         }
 
@@ -59,19 +59,18 @@ namespace ECommerce.AuthService.Application.Services
 
         public async Task<UserDto> UpdateAsync(string id, UserUpdateDto dto)
         {
-            var user = await _userRepo.GetByIdAsync(id) ?? throw new ArgumentException("User not found");
+            var user = await GetUserOrThrow(id);
             user.UserName = dto.UserName.Trim();
             user.Email = dto.Email.Trim().ToLowerInvariant();
             user.Role = Enum.Parse<UserRole>(dto.Role, true);
             user.IsActive = dto.IsActive;
-            user.UpdatedAt = DateTime.UtcNow;
-            await _userRepo.UpdateAsync(user);
+            await UpdateUserAndSave(user);
             return _mapper.Map<UserDto>(user);
         }
 
         public async Task DeleteAsync(string id)
         {
-            var user = await _userRepo.GetByIdAsync(id) ?? throw new ArgumentException("User not found");
+            var user = await GetUserOrThrow(id);
             await _userRepo.DeleteAsync(user);
             await _authRepo.RemoveUserRefreshTokensAsync(id);
         }
@@ -82,11 +81,9 @@ namespace ECommerce.AuthService.Application.Services
             if (string.IsNullOrEmpty(tokenUserId)) throw new UnauthorizedAccessException("Invalid access token");
             if (tokenUserId != dto.UserId) throw new UnauthorizedAccessException("Forbidden");
 
-            var user = await _userRepo.GetByIdAsync(dto.UserId) ?? throw new ArgumentException("User not found");
+            var user = await GetUserOrThrow(dto.UserId);
             if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.Password)) throw new UnauthorizedAccessException("Invalid current password");
-            user.Password = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
-            user.UpdatedAt = DateTime.UtcNow;
-            await _userRepo.UpdateAsync(user);
+            await SetPasswordAndSave(user, dto.NewPassword);
         }
 
         public async Task DeactivateAccountAsync(DeactivateAccountDto dto)
@@ -95,11 +92,48 @@ namespace ECommerce.AuthService.Application.Services
             if (string.IsNullOrEmpty(tokenUserId)) throw new UnauthorizedAccessException("Invalid access token");
             if (tokenUserId != dto.UserId) throw new UnauthorizedAccessException("Forbidden");
 
-            var user = await _userRepo.GetByIdAsync(dto.UserId) ?? throw new ArgumentException("User not found");
-            user.IsActive = !dto.Deactivate ? user.IsActive : false;
+            var user = await GetUserOrThrow(dto.UserId);
+            await SetActiveAndSave(user, false);
+            await _authRepo.RemoveUserRefreshTokensAsync(user.Id);
+        }
+
+        public async Task ChangePasswordAsAdminAsync(AdminChangePasswordDto dto)
+        {
+            var user = await GetUserOrThrow(dto.UserId);
+            await SetPasswordAndSave(user, dto.NewPassword);
+        }
+
+        public async Task SetActiveAsAdminAsync(AdminSetActiveDto dto)
+        {
+            var user = await GetUserOrThrow(dto.UserId);
+            await SetActiveAndSave(user, dto.IsActive);
+            if (!dto.IsActive)
+            {
+                await _authRepo.RemoveUserRefreshTokensAsync(user.Id);
+            }
+        }
+
+        private async Task<User> GetUserOrThrow(string userId)
+        {
+            return await _userRepo.GetByIdAsync(userId) ?? throw new ArgumentException("User not found");
+        }
+
+        private async Task UpdateUserAndSave(User user)
+        {
             user.UpdatedAt = DateTime.UtcNow;
             await _userRepo.UpdateAsync(user);
-            await _authRepo.RemoveUserRefreshTokensAsync(user.Id);
+        }
+
+        private async Task SetPasswordAndSave(User user, string newPassword)
+        {
+            user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await UpdateUserAndSave(user);
+        }
+
+        private async Task SetActiveAndSave(User user, bool isActive)
+        {
+            user.IsActive = isActive;
+            await UpdateUserAndSave(user);
         }
 
         private static string GetUserIdFromAccessToken(string accessToken)
