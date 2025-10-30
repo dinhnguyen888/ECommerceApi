@@ -60,11 +60,12 @@ namespace ECommerce.AuthService.Presentation.Http.Controllers
         }
 
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken, [FromHeader(Name = "X-Refresh-Token")] string refreshTokenHeader)
         {
             try
             {
-                var result = await _authService.RefreshTokenAsync(refreshToken);
+                var token = string.IsNullOrWhiteSpace(refreshToken) ? refreshTokenHeader : refreshToken;
+                var result = await _authService.RefreshTokenAsync(token);
                 return Ok(result);
             }
             catch (System.ArgumentException ex)
