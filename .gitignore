@@ -367,3 +367,5 @@ FodyWeavers.xsd
 /ECommerceApi/nginx.conf
 backend/ECommerce.AuthService/appsettings.json
 backend/ECommerce.AuthService/appsettings.json
+/backend/ECommerce.NotificationService/dist
+/backend/ECommerce.NotificationService/.env

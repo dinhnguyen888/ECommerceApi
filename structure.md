@@ -66,3 +66,85 @@ ECommerce_Clean/
 ├── app.js                          # Express app setup (register middlewares, routes)
 ├── server.js                       # Entry point (start server)
 └── package.json
+
+
+users [icon: user, color: blue] {
+  id string pk
+  userName string
+  password string
+  role enum(admin, client)
+  email string
+  createdAt DateTime
+  updatedAt DateTime
+  isActive bool
+}
+
+refreshTokens [icon: key-round, color: blue] {
+  id string pk
+  userId string
+  token string
+  expiredAt DateTime
+}
+
+products [icon: gcp-producer-portal, color: green] {
+  id string pk
+  name string
+  description string
+  price decimal
+  createdAt DateTime
+  fileUrl string
+  fileType string
+}
+
+
+
+orders [icon: shopping-cart, color: orange] {
+  id string pk
+  userId string fk
+  totalAmount decimal
+  status enum(pending, paid, failed)
+  createdAt DateTime
+}
+
+orderItems [icon: package, color: orange] {
+  id string pk
+  orderId string fk
+  productId string fk
+  price decimal
+}
+
+payments [icon: dollar-sign, color: orange] {
+  id string pk
+  orderId string fk
+  paymentMethod enum(card, paypal, momo)
+  transactionId string
+  paidAt DateTime
+  amount decimal
+}
+
+notifications [icon: bell, color: purple] {
+  id string pk
+  userId string fk allow null 
+  title string
+  message string
+  sentAt DateTime
+  type enum(email, system, personal)
+}
+
+emailLogs [icon: mail, color: purple] {
+  id string pk
+  notificationId string fk allow null
+  email string
+  sentAt DateTime
+  status enum(success, failed)
+}
+
+
+# Relationships
+refreshTokens.userId > users.id
+orderItems.orderId > orders.id
+orderItems.productId > products.id
+orders.userId > users.id
+payments.orderId > orders.id
+notifications.userId > users.id
+emailLogs.notificationId > notifications.id
