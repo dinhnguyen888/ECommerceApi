@@ -369,3 +369,4 @@ backend/ECommerce.AuthService/appsettings.json
 backend/ECommerce.AuthService/appsettings.json
 /backend/ECommerce.NotificationService/dist
 /backend/ECommerce.NotificationService/.env
+backend/ECommerce.TransactionService/appsettings.json
