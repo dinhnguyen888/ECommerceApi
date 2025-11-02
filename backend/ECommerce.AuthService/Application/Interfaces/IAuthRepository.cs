@@ -10,6 +10,7 @@ namespace ECommerce.AuthService.Application.Interfaces
         Task<User?> GetUserByUserNameOrEmailAsync(string identifier);
         Task<User?> GetUserByIdAsync(string userId);
         Task AddUserAsync(User user);
+        Task UpdateUserAsync(User user);
 
         Task<RefreshToken?> GetRefreshTokenAsync(string token);
         Task AddRefreshTokenAsync(RefreshToken token);

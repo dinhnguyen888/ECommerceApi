@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using System.Text.Json;
 using ECommerce.AuthService.Application.Interfaces;
 using ECommerce.AuthService.Application.Dtos;
+using Microsoft.Extensions.Configuration;
 
 namespace ECommerce.AuthService.Presentation.Http.Controllers
 {
@@ -10,9 +12,12 @@ namespace ECommerce.AuthService.Presentation.Http.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        public AuthController(IAuthService authService)
+        private readonly IConfiguration _configuration;
+        
+        public AuthController(IAuthService authService, IConfiguration configuration)
         {
             _authService = authService;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
@@ -34,6 +39,50 @@ namespace ECommerce.AuthService.Presentation.Http.Controllers
             catch (System.Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("verify-register")]
+        public async Task<IActionResult> VerifyRegister([FromQuery] string token)
+        {
+            try
+            {
+                var result = await _authService.VerifyRegistrationAsync(token);
+                
+                // Lấy frontend callback URL từ configuration
+                var frontendCallbackUrl = _configuration["AppSettings:FrontendCallbackUrl"] ?? "http://localhost:3000/auth/verify-callback";
+                
+                // Chuyển đổi result thành JSON và encode thành query string
+                var jsonData = JsonSerializer.Serialize(result, new JsonSerializerOptions 
+                { 
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+                });
+                
+                // Encode JSON để làm query string
+                var encodedData = Uri.EscapeDataString(jsonData);
+                
+                // Redirect tới frontend với query string
+                var redirectUrl = $"{frontendCallbackUrl}?data={encodedData}";
+                
+                return Redirect(redirectUrl);
+            }
+            catch (System.Exception ex)
+            {
+                // Nếu có lỗi, vẫn redirect nhưng với error message
+                var frontendCallbackUrl = _configuration["AppSettings:FrontendCallbackUrl"] ?? "http://localhost:3000/auth/verify-callback";
+                var errorResult = new VerifyRegistrationResponseDto
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+                var jsonData = JsonSerializer.Serialize(errorResult, new JsonSerializerOptions 
+                { 
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+                });
+                var encodedData = Uri.EscapeDataString(jsonData);
+                var redirectUrl = $"{frontendCallbackUrl}?data={encodedData}";
+                
+                return Redirect(redirectUrl);
             }
         }
 

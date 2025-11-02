@@ -86,6 +86,7 @@ builder.Services.AddAuthentication(options =>
 
 // DI Services
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IVerificationTokenService, VerificationTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();

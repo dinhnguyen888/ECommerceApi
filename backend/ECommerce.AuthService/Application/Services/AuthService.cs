@@ -22,16 +22,18 @@ namespace ECommerce.AuthService.Application.Services
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
         private readonly IMessagePublisher _messagePublisher;
+        private readonly IVerificationTokenService _verificationTokenService;
 
-        public AuthService(IAuthRepository repo, IMapper mapper, IConfiguration config, IMessagePublisher messagePublisher)
+        public AuthService(IAuthRepository repo, IMapper mapper, IConfiguration config, IMessagePublisher messagePublisher, IVerificationTokenService verificationTokenService)
         {
             _repo = repo;
             _mapper = mapper;
             _config = config;
             _messagePublisher = messagePublisher;
+            _verificationTokenService = verificationTokenService;
         }
 
-        public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
+        public async Task<RegisterResponseDto> RegisterAsync(RegisterDto dto)
         {
             var normalizedUserName = dto.UserName?.Trim();
             var normalizedEmail = dto.Email?.Trim().ToLowerInvariant();
@@ -52,7 +54,7 @@ namespace ECommerce.AuthService.Application.Services
             user.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             user.Email = normalizedEmail;
             user.UserName = normalizedUserName;
-            user.IsActive = true;
+            user.IsActive = false; // Chưa verify thì không active
             user.CreatedAt = DateTime.UtcNow;
             user.UpdatedAt = DateTime.UtcNow;
 
@@ -67,11 +69,71 @@ namespace ECommerce.AuthService.Application.Services
             };
             _messagePublisher.PublishToQueue("user.registered", registeredEvent);
 
-            var tokens = await IssueTokensAsync(user, replaceExistingForUser: false);
-            return new AuthResponseDto
+            // Tạo verification token
+            var verificationToken = _verificationTokenService.GenerateVerificationToken(user.Id, user.Email);
+            
+            // Tạo verify URL
+            var baseUrl = _config["AppSettings:BaseUrl"] ?? "https://localhost:7001";
+            var verifyUrl = $"{baseUrl}/api/auth/verify-register?token={Uri.EscapeDataString(verificationToken)}";
+
+            return new RegisterResponseDto
             {
-                AccessToken = tokens.accessToken,
-                RefreshToken = tokens.refreshToken.Token,
+                VerifyUrl = verifyUrl,
+                Message = "Registration successful. Please check your email for verification link."
+            };
+        }
+
+        public async Task<VerifyRegistrationResponseDto> VerifyRegistrationAsync(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return new VerifyRegistrationResponseDto
+                {
+                    Success = false,
+                    Message = "Verification token is required"
+                };
+            }
+
+            var (isValid, userId, email) = _verificationTokenService.ValidateVerificationToken(token);
+            
+            if (!isValid || string.IsNullOrEmpty(userId))
+            {
+                return new VerifyRegistrationResponseDto
+                {
+                    Success = false,
+                    Message = "Invalid or expired verification token"
+                };
+            }
+
+            var user = await _repo.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return new VerifyRegistrationResponseDto
+                {
+                    Success = false,
+                    Message = "User not found"
+                };
+            }
+
+            // Kiểm tra email có khớp không
+            if (user.Email != email)
+            {
+                return new VerifyRegistrationResponseDto
+                {
+                    Success = false,
+                    Message = "Email mismatch"
+                };
+            }
+
+            // Activate user
+            user.IsActive = true;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _repo.UpdateUserAsync(user);
+
+            return new VerifyRegistrationResponseDto
+            {
+                Success = true,
+                Message = "Email verified successfully",
                 User = _mapper.Map<UserDto>(user)
             };
         }

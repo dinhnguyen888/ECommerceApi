@@ -37,6 +37,12 @@ namespace ECommerce.AuthService.Infrastructure.Repositories
             await _db.SaveChangesAsync();
         }
 
+        public async Task UpdateUserAsync(User user)
+        {
+            _db.Users.Update(user);
+            await _db.SaveChangesAsync();
+        }
+
         public Task<RefreshToken?> GetRefreshTokenAsync(string token)
         {
             return _db.RefreshTokens.Include(r => r.User).FirstOrDefaultAsync(r => r.Token == token);
