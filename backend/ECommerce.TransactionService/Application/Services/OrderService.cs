@@ -9,7 +9,6 @@ using ECommerce.TransactionService.Application.Interfaces;
 
 namespace ECommerce.TransactionService.Application.Services
 {
-    // Service xu ly business logic cua Order
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepo;
@@ -21,13 +20,10 @@ namespace ECommerce.TransactionService.Application.Services
             _mapper = mapper;
         }
 
-        // Tao don hang moi
         public async Task<OrderGetDto> CreateOrderAsync(OrderCreateDto dto)
         {
-            // Tinh tong tien
             var totalAmount = dto.OrderItems.Sum(item => item.Price * item.Quantity);
 
-            // Tao Order entity
             var order = new Order
             {
                 Id = Guid.NewGuid().ToString(),
@@ -37,7 +33,6 @@ namespace ECommerce.TransactionService.Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            // Tao OrderItems
             foreach (var itemDto in dto.OrderItems)
             {
                 var orderItem = new OrderItem
@@ -51,14 +46,10 @@ namespace ECommerce.TransactionService.Application.Services
                 order.OrderItems.Add(orderItem);
             }
 
-            // Luu vao database
             var createdOrder = await _orderRepo.CreateAsync(order);
-
-            // Tra ve DTO
             return _mapper.Map<OrderGetDto>(createdOrder);
         }
 
-        // Lay don hang theo ID
         public async Task<OrderGetDto?> GetOrderByIdAsync(string id)
         {
             var order = await _orderRepo.GetByIdWithDetailsAsync(id);
@@ -68,21 +59,18 @@ namespace ECommerce.TransactionService.Application.Services
             return _mapper.Map<OrderGetDto>(order);
         }
 
-        // Lay tat ca don hang cua user
         public async Task<List<OrderGetDto>> GetOrdersByUserIdAsync(string userId)
         {
             var orders = await _orderRepo.GetByUserIdAsync(userId);
             return _mapper.Map<List<OrderGetDto>>(orders);
         }
 
-        // Lay tat ca don hang (admin)
         public async Task<List<OrderGetDto>> GetAllOrdersAsync()
         {
             var orders = await _orderRepo.GetAllAsync();
             return _mapper.Map<List<OrderGetDto>>(orders);
         }
 
-        // Cap nhat trang thai don hang
         public async Task UpdateOrderStatusAsync(string orderId, OrderStatus status)
         {
             var order = await _orderRepo.GetByIdAsync(orderId);
@@ -91,6 +79,33 @@ namespace ECommerce.TransactionService.Application.Services
 
             order.Status = status;
             await _orderRepo.UpdateAsync(order);
+        }
+
+        public async Task<OrderGetDto> UpdateOrderAsync(OrderUpdateDto dto)
+        {
+            var order = await _orderRepo.GetByIdAsync(dto.Id);
+            if (order == null)
+                throw new ArgumentException($"Don hang khong ton tai: {dto.Id}");
+
+            if (dto.Status.HasValue)
+                order.Status = dto.Status.Value;
+
+            if (dto.TotalAmount.HasValue)
+                order.TotalAmount = dto.TotalAmount.Value;
+
+            await _orderRepo.UpdateAsync(order);
+
+            var updatedOrder = await _orderRepo.GetByIdWithDetailsAsync(dto.Id);
+            return _mapper.Map<OrderGetDto>(updatedOrder!);
+        }
+
+        public async Task DeleteOrderAsync(string id)
+        {
+            var order = await _orderRepo.GetByIdAsync(id);
+            if (order == null)
+                throw new ArgumentException($"Don hang khong ton tai: {id}");
+
+            await _orderRepo.DeleteAsync(id);
         }
     }
 }

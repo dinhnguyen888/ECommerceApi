@@ -8,7 +8,6 @@ using ECommerce.TransactionService.Infrastructure.Persistence;
 
 namespace ECommerce.TransactionService.Infrastructure.Repositories
 {
-    // Repository implementation cho Order
     public class OrderRepository : IOrderRepository
     {
         private readonly TransactionDbContext _db;

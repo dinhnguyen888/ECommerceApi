@@ -21,5 +21,11 @@ namespace ECommerce.TransactionService.Application.Interfaces
 
         // Cap nhat trang thai don hang
         Task UpdateOrderStatusAsync(string orderId, Entities.OrderStatus status);
+
+        // Cap nhat don hang
+        Task<OrderGetDto> UpdateOrderAsync(OrderUpdateDto dto);
+
+        // Xoa don hang
+        Task DeleteOrderAsync(string id);
     }
 }

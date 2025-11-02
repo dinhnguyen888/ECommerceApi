@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +9,6 @@ using ECommerce.TransactionService.Infrastructure.Persistence;
 
 namespace ECommerce.TransactionService.Infrastructure.Repositories
 {
-    // Repository implementation cho Payment
     public class PaymentRepository : IPaymentRepository
     {
         private readonly TransactionDbContext _db;
@@ -51,6 +51,24 @@ namespace ECommerce.TransactionService.Infrastructure.Repositories
         {
             _db.Payments.Update(payment);
             await _db.SaveChangesAsync();
+        }
+
+        public async Task<List<Payment>> GetAllAsync()
+        {
+            return await _db.Payments
+                .Include(p => p.Order)
+                .OrderByDescending(p => p.PaidAt ?? DateTime.MinValue)
+                .ToListAsync();
+        }
+
+        public async Task DeleteAsync(string id)
+        {
+            var payment = await GetByIdAsync(id);
+            if (payment != null)
+            {
+                _db.Payments.Remove(payment);
+                await _db.SaveChangesAsync();
+            }
         }
     }
 }

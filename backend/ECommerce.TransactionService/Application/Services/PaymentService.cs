@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using ECommerce.TransactionService.Application.Dtos;
@@ -7,7 +8,6 @@ using ECommerce.TransactionService.Application.Interfaces;
 
 namespace ECommerce.TransactionService.Application.Services
 {
-    // Service xu ly business logic cua Payment
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentRepository _paymentRepo;
@@ -27,22 +27,17 @@ namespace ECommerce.TransactionService.Application.Services
             _mapper = mapper;
         }
 
-        // Tao thanh toan va tra ve URL thanh toan VNPay
         public async Task<VnpayPaymentUrlDto> CreatePaymentAsync(PaymentCreateDto dto)
         {
-            // Kiem tra don hang ton tai
             var order = await _orderRepo.GetByIdAsync(dto.OrderId);
             if (order == null)
                 throw new ArgumentException($"Don hang khong ton tai: {dto.OrderId}");
 
-            // Kiem tra phuong thuc thanh toan
             if (dto.PaymentMethod != PaymentMethod.Vnpay)
                 throw new ArgumentException("Chi ho tro thanh toan qua VNPay");
 
-            // Tao transaction ID
             var transactionId = Guid.NewGuid().ToString();
 
-            // Tao Payment entity
             var payment = new Payment
             {
                 Id = Guid.NewGuid().ToString(),
@@ -50,13 +45,11 @@ namespace ECommerce.TransactionService.Application.Services
                 PaymentMethod = dto.PaymentMethod,
                 TransactionId = transactionId,
                 Amount = dto.Amount,
-                PaidAt = null // Chua thanh toan
+                PaidAt = null
             };
 
-            // Luu payment vao database
             await _paymentRepo.CreateAsync(payment);
 
-            // Tao URL thanh toan VNPay
             var paymentUrl = await _vnpayService.CreatePaymentUrlAsync(
                 dto.OrderId,
                 dto.Amount,
@@ -120,7 +113,6 @@ namespace ECommerce.TransactionService.Application.Services
             return true;
         }
 
-        // Lay thong tin thanh toan theo ID
         public async Task<PaymentGetDto?> GetPaymentByIdAsync(string id)
         {
             var payment = await _paymentRepo.GetByIdAsync(id);
@@ -130,7 +122,6 @@ namespace ECommerce.TransactionService.Application.Services
             return _mapper.Map<PaymentGetDto>(payment);
         }
 
-        // Lay thong tin thanh toan theo TransactionId
         public async Task<PaymentGetDto?> GetPaymentByTransactionIdAsync(string transactionId)
         {
             var payment = await _paymentRepo.GetByTransactionIdAsync(transactionId);
@@ -138,6 +129,51 @@ namespace ECommerce.TransactionService.Application.Services
                 return null;
 
             return _mapper.Map<PaymentGetDto>(payment);
+        }
+
+        public async Task<List<PaymentGetDto>> GetAllPaymentsAsync()
+        {
+            var payments = await _paymentRepo.GetAllAsync();
+            return _mapper.Map<List<PaymentGetDto>>(payments);
+        }
+
+        public async Task<List<PaymentGetDto>> GetPaymentsByOrderIdAsync(string orderId)
+        {
+            var payments = await _paymentRepo.GetByOrderIdAsync(orderId);
+            return _mapper.Map<List<PaymentGetDto>>(payments);
+        }
+
+        public async Task<PaymentGetDto> UpdatePaymentAsync(PaymentUpdateDto dto)
+        {
+            var payment = await _paymentRepo.GetByIdAsync(dto.Id);
+            if (payment == null)
+                throw new ArgumentException($"Thanh toan khong ton tai: {dto.Id}");
+
+            if (dto.PaymentMethod.HasValue)
+                payment.PaymentMethod = dto.PaymentMethod.Value;
+
+            if (!string.IsNullOrEmpty(dto.TransactionId))
+                payment.TransactionId = dto.TransactionId;
+
+            if (dto.PaidAt.HasValue)
+                payment.PaidAt = dto.PaidAt.Value;
+
+            if (dto.Amount.HasValue)
+                payment.Amount = dto.Amount.Value;
+
+            await _paymentRepo.UpdateAsync(payment);
+
+            var updatedPayment = await _paymentRepo.GetByIdAsync(dto.Id);
+            return _mapper.Map<PaymentGetDto>(updatedPayment!);
+        }
+
+        public async Task DeletePaymentAsync(string id)
+        {
+            var payment = await _paymentRepo.GetByIdAsync(id);
+            if (payment == null)
+                throw new ArgumentException($"Thanh toan khong ton tai: {id}");
+
+            await _paymentRepo.DeleteAsync(id);
         }
     }
 }

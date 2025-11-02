@@ -21,5 +21,11 @@ namespace ECommerce.TransactionService.Application.Interfaces
 
         // Cap nhat thanh toan
         Task UpdateAsync(Payment payment);
+
+        // Lay tat ca thanh toan
+        Task<List<Payment>> GetAllAsync();
+
+        // Xoa thanh toan
+        Task DeleteAsync(string id);
     }
 }

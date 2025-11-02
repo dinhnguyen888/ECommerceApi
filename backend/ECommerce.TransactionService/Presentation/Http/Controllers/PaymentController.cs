@@ -7,7 +7,6 @@ using ECommerce.TransactionService.Application.Interfaces;
 
 namespace ECommerce.TransactionService.Presentation.Http.Controllers
 {
-    // Controller xu ly cac API lien quan den Payment
     [ApiController]
     [Route("api/[controller]")]
     public class PaymentController : ControllerBase
@@ -19,8 +18,6 @@ namespace ECommerce.TransactionService.Presentation.Http.Controllers
             _paymentService = paymentService;
         }
 
-        // POST: api/payment/create
-        // Tao thanh toan va tra ve URL thanh toan VNPay
         [HttpPost("create")]
         [Authorize]
         public async Task<ActionResult<VnpayPaymentUrlDto>> CreatePayment([FromBody] PaymentCreateDto dto)
@@ -95,8 +92,6 @@ namespace ECommerce.TransactionService.Presentation.Http.Controllers
             }
         }
 
-        // GET: api/payment/verify
-        // Endpoint de frontend verify payment status sau khi nhan callback tu ReturnUrl
         [HttpGet("verify")]
         [AllowAnonymous]
         public async Task<ActionResult<PaymentGetDto>> VerifyPayment([FromQuery] string transactionId)
@@ -122,8 +117,6 @@ namespace ECommerce.TransactionService.Presentation.Http.Controllers
             }
         }
 
-        // GET: api/payment/{id}
-        // Lay thong tin thanh toan theo ID
         [HttpGet("{id}")]
         [Authorize]
         public async Task<ActionResult<PaymentGetDto>> GetPaymentById(string id)
@@ -142,8 +135,6 @@ namespace ECommerce.TransactionService.Presentation.Http.Controllers
             }
         }
 
-        // GET: api/payment/transaction/{transactionId}
-        // Lay thong tin thanh toan theo TransactionId
         [HttpGet("transaction/{transactionId}")]
         [Authorize]
         public async Task<ActionResult<PaymentGetDto>> GetPaymentByTransactionId(string transactionId)
@@ -155,6 +146,77 @@ namespace ECommerce.TransactionService.Presentation.Http.Controllers
                     return NotFound(new { message = $"Khong tim thay thanh toan voi transactionId: {transactionId}" });
 
                 return Ok(payment);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Loi he thong", error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<PaymentGetDto>>> GetAllPayments()
+        {
+            try
+            {
+                var payments = await _paymentService.GetAllPaymentsAsync();
+                return Ok(payments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Loi he thong", error = ex.Message });
+            }
+        }
+
+        [HttpGet("order/{orderId}")]
+        [Authorize]
+        public async Task<ActionResult<List<PaymentGetDto>>> GetPaymentsByOrderId(string orderId)
+        {
+            try
+            {
+                var payments = await _paymentService.GetPaymentsByOrderIdAsync(orderId);
+                return Ok(payments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Loi he thong", error = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<PaymentGetDto>> UpdatePayment(string id, [FromBody] PaymentUpdateDto dto)
+        {
+            try
+            {
+                if (id != dto.Id)
+                    return BadRequest(new { message = "ID trong URL va body khong khop" });
+
+                var payment = await _paymentService.UpdatePaymentAsync(dto);
+                return Ok(payment);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Loi he thong", error = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> DeletePayment(string id)
+        {
+            try
+            {
+                await _paymentService.DeletePaymentAsync(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
