@@ -3,6 +3,7 @@ using ECommerce.TransactionService.Application.Mappings;
 using ECommerce.TransactionService.Application.Services;
 using ECommerce.TransactionService.Infrastructure.Persistence;
 using ECommerce.TransactionService.Infrastructure.Repositories;
+using ECommerce.TransactionService.Infrastructure.MessageBroker;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -86,6 +87,11 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IVnpayService, VnpayService>();
+
+// RabbitMQ
+builder.Services.AddSingleton<RabbitMqConnection>(sp => new RabbitMqConnection(builder.Configuration));
+builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
+builder.Services.AddScoped<IMessageConsumer, RabbitMqConsumer>();
 
 var app = builder.Build();
 

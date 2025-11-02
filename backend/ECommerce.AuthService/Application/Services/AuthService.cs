@@ -10,6 +10,7 @@ using BCrypt.Net;
 using ECommerce.AuthService.Application.Dtos;
 using ECommerce.AuthService.Application.Entities;
 using ECommerce.AuthService.Application.Interfaces;
+using ECommerce.AuthService.Application.Events;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -20,12 +21,14 @@ namespace ECommerce.AuthService.Application.Services
         private readonly IAuthRepository _repo;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
+        private readonly IMessagePublisher _messagePublisher;
 
-        public AuthService(IAuthRepository repo, IMapper mapper, IConfiguration config)
+        public AuthService(IAuthRepository repo, IMapper mapper, IConfiguration config, IMessagePublisher messagePublisher)
         {
             _repo = repo;
             _mapper = mapper;
             _config = config;
+            _messagePublisher = messagePublisher;
         }
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
@@ -54,6 +57,15 @@ namespace ECommerce.AuthService.Application.Services
             user.UpdatedAt = DateTime.UtcNow;
 
             await _repo.AddUserAsync(user);
+
+            var registeredEvent = new UserRegisteredEvent
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                UserName = user.UserName,
+                RegisteredAt = user.CreatedAt
+            };
+            _messagePublisher.PublishToQueue("user.registered", registeredEvent);
 
             var tokens = await IssueTokensAsync(user, replaceExistingForUser: false);
             return new AuthResponseDto

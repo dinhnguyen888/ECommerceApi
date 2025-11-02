@@ -3,6 +3,7 @@ using ECommerce.AuthService.Application.Services;
 using ECommerce.AuthService.Application.Interfaces;
 using ECommerce.AuthService.Infrastructure.Persistence;
 using ECommerce.AuthService.Infrastructure.Repositories;
+using ECommerce.AuthService.Infrastructure.MessageBroker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -89,6 +90,11 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+
+// RabbitMQ
+builder.Services.AddSingleton<RabbitMqConnection>(sp => new RabbitMqConnection(builder.Configuration));
+builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
+builder.Services.AddScoped<IMessageConsumer, RabbitMqConsumer>();
 
 var app = builder.Build();
 

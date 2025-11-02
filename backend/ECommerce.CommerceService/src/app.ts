@@ -1,6 +1,7 @@
 import express, { Express } from 'express';
 import cors from 'cors';
 import { connectDatabase } from './infrastructure/config/database';
+import { RabbitMqConnection } from './infrastructure/messageBroker/rabbitmqConnection';
 import { ProductRepository } from './infrastructure/repositories/ProductRepository';
 import { BrandRepository } from './infrastructure/repositories/BrandRepository';
 import { CategoryRepository } from './infrastructure/repositories/CategoryRepository';
@@ -16,8 +17,10 @@ import { CartController } from './presentation/http/controllers/CartController';
 import { createRoutes } from './presentation/http/routes/index';
 
 export async function createApp(): Promise<Express> {
-  // Connect to database
   await connectDatabase();
+
+  const rabbitMqConnection = new RabbitMqConnection();
+  await rabbitMqConnection.connect();
 
   // Initialize repositories
   const productRepository = new ProductRepository();

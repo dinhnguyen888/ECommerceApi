@@ -6,6 +6,7 @@ using AutoMapper;
 using ECommerce.TransactionService.Application.Dtos;
 using ECommerce.TransactionService.Application.Entities;
 using ECommerce.TransactionService.Application.Interfaces;
+using ECommerce.TransactionService.Application.Events;
 
 namespace ECommerce.TransactionService.Application.Services
 {
@@ -13,11 +14,13 @@ namespace ECommerce.TransactionService.Application.Services
     {
         private readonly IOrderRepository _orderRepo;
         private readonly IMapper _mapper;
+        private readonly IMessagePublisher _messagePublisher;
 
-        public OrderService(IOrderRepository orderRepo, IMapper mapper)
+        public OrderService(IOrderRepository orderRepo, IMapper mapper, IMessagePublisher messagePublisher)
         {
             _orderRepo = orderRepo;
             _mapper = mapper;
+            _messagePublisher = messagePublisher;
         }
 
         public async Task<OrderGetDto> CreateOrderAsync(OrderCreateDto dto)
@@ -47,6 +50,16 @@ namespace ECommerce.TransactionService.Application.Services
             }
 
             var createdOrder = await _orderRepo.CreateAsync(order);
+
+            var orderCreatedEvent = new OrderCreatedEvent
+            {
+                OrderId = order.Id,
+                UserId = order.UserId,
+                TotalAmount = order.TotalAmount,
+                CreatedAt = order.CreatedAt
+            };
+            _messagePublisher.PublishToQueue("order.created", orderCreatedEvent);
+
             return _mapper.Map<OrderGetDto>(createdOrder);
         }
 

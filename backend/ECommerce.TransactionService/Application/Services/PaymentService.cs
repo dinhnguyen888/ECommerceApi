@@ -5,6 +5,7 @@ using AutoMapper;
 using ECommerce.TransactionService.Application.Dtos;
 using ECommerce.TransactionService.Application.Entities;
 using ECommerce.TransactionService.Application.Interfaces;
+using ECommerce.TransactionService.Application.Events;
 
 namespace ECommerce.TransactionService.Application.Services
 {
@@ -14,17 +15,20 @@ namespace ECommerce.TransactionService.Application.Services
         private readonly IOrderRepository _orderRepo;
         private readonly IVnpayService _vnpayService;
         private readonly IMapper _mapper;
+        private readonly IMessagePublisher _messagePublisher;
 
         public PaymentService(
             IPaymentRepository paymentRepo,
             IOrderRepository orderRepo,
             IVnpayService vnpayService,
-            IMapper mapper)
+            IMapper mapper,
+            IMessagePublisher messagePublisher)
         {
             _paymentRepo = paymentRepo;
             _orderRepo = orderRepo;
             _vnpayService = vnpayService;
             _mapper = mapper;
+            _messagePublisher = messagePublisher;
         }
 
         public async Task<VnpayPaymentUrlDto> CreatePaymentAsync(PaymentCreateDto dto)
@@ -108,6 +112,16 @@ namespace ECommerce.TransactionService.Application.Services
             {
                 order.Status = OrderStatus.Paid;
                 await _orderRepo.UpdateAsync(order);
+
+                var paymentCompletedEvent = new PaymentCompletedEvent
+                {
+                    PaymentId = payment.Id,
+                    OrderId = payment.OrderId,
+                    UserId = order.UserId,
+                    Amount = payment.Amount,
+                    PaidAt = payment.PaidAt ?? DateTime.UtcNow
+                };
+                _messagePublisher.PublishToQueue("payment.completed", paymentCompletedEvent);
             }
 
             return true;
