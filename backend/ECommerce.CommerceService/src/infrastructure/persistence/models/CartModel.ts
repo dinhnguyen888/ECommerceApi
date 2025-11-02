@@ -1,13 +1,15 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { Cart, CartItem } from '../../../application/entities/Cart';
 
-const CartItemSchema = new Schema<CartItem>({
+const CartItemSchema = new Schema({
   productId: { type: String, required: true },
   quantity: { type: Number, required: true },
   price: { type: Number, required: true }
 }, { _id: false });
 
-const CartSchema = new Schema<Cart & Document>({
+interface CartDocument extends Omit<Cart, '_id'>, Document {}
+
+const CartSchema = new Schema<CartDocument>({
   userId: { type: String, required: true, unique: true },
   items: [CartItemSchema],
   totalAmount: { type: Number, default: 0 },
@@ -15,7 +17,7 @@ const CartSchema = new Schema<Cart & Document>({
   updatedAt: { type: Date, default: Date.now }
 });
 
-export const CartModel = mongoose.model<Cart & Document>('Cart', CartSchema);
+export const CartModel = mongoose.model<CartDocument>('Cart', CartSchema);
 
 
 
