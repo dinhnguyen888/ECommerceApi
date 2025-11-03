@@ -19,6 +19,9 @@ namespace ECommerce.TransactionService.Application.Interfaces
         // Lay tat ca don hang
         Task<List<Order>> GetAllAsync();
 
+        // Lay tat ca don hang pending da het han (expired)
+        Task<List<Order>> GetExpiredPendingOrdersAsync();
+
         // Tao don hang moi
         Task<Order> CreateAsync(Order order);
 

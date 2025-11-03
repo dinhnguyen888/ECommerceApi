@@ -33,8 +33,23 @@ namespace ECommerce.TransactionService.Infrastructure.Persistence
                 .IsRequired()
                 .HasColumnType("decimal(18,2)");
 
+            builder.Property(p => p.Status)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
             builder.Property(p => p.PaidAt)
                 .IsRequired(false);
+
+            builder.Property(p => p.CreatedAt)
+                .IsRequired();
+
+            builder.Property(p => p.UpdatedAt)
+                .IsRequired();
+
+            builder.Property(p => p.FailureReason)
+                .IsRequired(false)
+                .HasMaxLength(500);
 
             // Index cho TransactionId de tim kiem nhanh
             builder.HasIndex(p => p.TransactionId)

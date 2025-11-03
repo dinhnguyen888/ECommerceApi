@@ -2,7 +2,8 @@ using System;
 
 namespace ECommerce.TransactionService.Application.Events
 {
-    public class PaymentCompletedEvent
+    // Event de gui thong bao thanh toan thanh cong den NotificationService
+    public class PaymentSuccessNotificationEvent
     {
         public string PaymentId { get; set; }
         public string OrderId { get; set; }

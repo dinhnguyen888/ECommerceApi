@@ -11,6 +11,8 @@ namespace ECommerce.TransactionService.Application.Entities
         public decimal TotalAmount { get; set; }
         public OrderStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public DateTime ExpiresAt { get; set; } // Thoi gian het han thanh toan (30 phut)
 
         // Navigation properties
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

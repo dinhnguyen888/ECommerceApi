@@ -32,6 +32,16 @@ namespace ECommerce.TransactionService.Infrastructure.Persistence
             builder.Property(o => o.CreatedAt)
                 .IsRequired();
 
+            builder.Property(o => o.UpdatedAt)
+                .IsRequired();
+
+            builder.Property(o => o.ExpiresAt)
+                .IsRequired();
+
+            // Index cho ExpiresAt de tim kiem nhanh cac order het han
+            builder.HasIndex(o => o.ExpiresAt)
+                .HasFilter("[Status] = 'Pending'");
+
             // Relationship: Order -> OrderItems (one-to-many)
             builder.HasMany(o => o.OrderItems)
                 .WithOne(oi => oi.Order)

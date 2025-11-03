@@ -33,7 +33,9 @@ namespace ECommerce.TransactionService.Application.Services
                 UserId = dto.UserId,
                 TotalAmount = totalAmount,
                 Status = OrderStatus.Pending,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(30)
             };
 
             foreach (var itemDto in dto.OrderItems)
@@ -91,6 +93,7 @@ namespace ECommerce.TransactionService.Application.Services
                 throw new ArgumentException($"Don hang khong ton tai: {orderId}");
 
             order.Status = status;
+            order.UpdatedAt = DateTime.UtcNow;
             await _orderRepo.UpdateAsync(order);
         }
 
@@ -106,6 +109,7 @@ namespace ECommerce.TransactionService.Application.Services
             if (dto.TotalAmount.HasValue)
                 order.TotalAmount = dto.TotalAmount.Value;
 
+            order.UpdatedAt = DateTime.UtcNow;
             await _orderRepo.UpdateAsync(order);
 
             var updatedOrder = await _orderRepo.GetByIdWithDetailsAsync(dto.Id);

@@ -9,8 +9,12 @@ namespace ECommerce.TransactionService.Application.Dtos
         public string Id { get; set; }
         public string OrderId { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
+        public PaymentStatus Status { get; set; }
         public string TransactionId { get; set; }
         public DateTime? PaidAt { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public decimal Amount { get; set; }
+        public string? FailureReason { get; set; }
     }
 }

@@ -95,11 +95,16 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IVnpayService, VnpayService>();
+builder.Services.AddScoped<IBuyNowService, BuyNowService>();
 
 // RabbitMQ
 builder.Services.AddSingleton<RabbitMqConnection>(sp => new RabbitMqConnection(builder.Configuration));
 builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
 builder.Services.AddScoped<IMessageConsumer, RabbitMqConsumer>();
+builder.Services.AddScoped<IRequestReplyService, RabbitMqRequestReplyService>();
+
+// Background Services
+builder.Services.AddHostedService<ECommerce.TransactionService.Application.Services.OrderExpirationBackgroundService>();
 
 var app = builder.Build();
 

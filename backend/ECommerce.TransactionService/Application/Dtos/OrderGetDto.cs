@@ -12,6 +12,8 @@ namespace ECommerce.TransactionService.Application.Dtos
         public decimal TotalAmount { get; set; }
         public OrderStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public DateTime ExpiresAt { get; set; }
         public List<OrderItemGetDto> OrderItems { get; set; }
         public List<PaymentGetDto> Payments { get; set; }
     }

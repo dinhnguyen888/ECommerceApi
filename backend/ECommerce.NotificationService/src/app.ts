@@ -43,6 +43,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api', routes);
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', service: 'NotificationService' });
+});
+
 app.use(errorHandler);
 
 export default app;

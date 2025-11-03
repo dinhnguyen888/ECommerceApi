@@ -47,8 +47,11 @@ namespace ECommerce.TransactionService.Application.Services
                 Id = Guid.NewGuid().ToString(),
                 OrderId = dto.OrderId,
                 PaymentMethod = dto.PaymentMethod,
+                Status = PaymentStatus.Pending,
                 TransactionId = transactionId,
                 Amount = dto.Amount,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
                 PaidAt = null
             };
 
@@ -75,19 +78,6 @@ namespace ECommerce.TransactionService.Application.Services
                 throw new UnauthorizedAccessException("Chu ky khong hop le");
             }
 
-            // Kiem tra response code
-            if (callback.vnp_ResponseCode != "00")
-            {
-                var errorMessage = _vnpayService.GetResponseMessage(callback.vnp_ResponseCode);
-                throw new InvalidOperationException($"Thanh toan that bai: {errorMessage}");
-            }
-
-            // Kiem tra transaction status
-            if (callback.vnp_TransactionStatus != "00")
-            {
-                throw new InvalidOperationException("Giao dich khong thanh cong");
-            }
-
             // Tim payment theo TransactionId (vnp_TxnRef)
             var payment = await _paymentRepo.GetByTransactionIdAsync(callback.vnp_TxnRef);
             if (payment == null)
@@ -96,32 +86,82 @@ namespace ECommerce.TransactionService.Application.Services
             }
 
             // Neu da thanh toan roi thi khong cap nhat lai
-            if (payment.PaidAt != null)
+            if (payment.PaidAt != null && payment.Status == PaymentStatus.Completed)
             {
                 return true;
             }
 
-            // Cap nhat thong tin thanh toan
+            // Kiem tra response code va transaction status
+            if (callback.vnp_ResponseCode != "00" || callback.vnp_TransactionStatus != "00")
+            {
+                // Thanh toan that bai
+                var errorMessage = _vnpayService.GetResponseMessage(callback.vnp_ResponseCode);
+                
+                payment.Status = PaymentStatus.Failed;
+                payment.FailureReason = errorMessage;
+                payment.UpdatedAt = DateTime.UtcNow;
+                await _paymentRepo.UpdateAsync(payment);
+
+                // Cap nhat trang thai don hang thanh Failed
+                var order = await _orderRepo.GetByIdAsync(payment.OrderId);
+                if (order != null)
+                {
+                    order.Status = OrderStatus.Failed;
+                    order.UpdatedAt = DateTime.UtcNow;
+                    await _orderRepo.UpdateAsync(order);
+
+                    // Publish payment failed event
+                    var paymentFailedEvent = new PaymentFailedEvent
+                    {
+                        PaymentId = payment.Id,
+                        OrderId = payment.OrderId,
+                        UserId = order.UserId,
+                        Amount = payment.Amount,
+                        FailureReason = errorMessage,
+                        FailedAt = DateTime.UtcNow
+                    };
+                    _messagePublisher.PublishToQueue("payment.failed", paymentFailedEvent);
+                }
+
+                return false;
+            }
+
+            // Thanh toan thanh cong
+            payment.Status = PaymentStatus.Completed;
             payment.PaidAt = DateTime.UtcNow;
             payment.TransactionId = callback.vnp_TransactionNo ?? payment.TransactionId;
+            payment.UpdatedAt = DateTime.UtcNow;
             await _paymentRepo.UpdateAsync(payment);
 
             // Cap nhat trang thai don hang thanh Paid
-            var order = await _orderRepo.GetByIdAsync(payment.OrderId);
-            if (order != null)
+            var successOrder = await _orderRepo.GetByIdAsync(payment.OrderId);
+            if (successOrder != null)
             {
-                order.Status = OrderStatus.Paid;
-                await _orderRepo.UpdateAsync(order);
+                successOrder.Status = OrderStatus.Paid;
+                successOrder.UpdatedAt = DateTime.UtcNow;
+                await _orderRepo.UpdateAsync(successOrder);
 
+                // Publish payment completed event (cho notification service)
                 var paymentCompletedEvent = new PaymentCompletedEvent
                 {
                     PaymentId = payment.Id,
                     OrderId = payment.OrderId,
-                    UserId = order.UserId,
+                    UserId = successOrder.UserId,
                     Amount = payment.Amount,
                     PaidAt = payment.PaidAt ?? DateTime.UtcNow
                 };
                 _messagePublisher.PublishToQueue("payment.completed", paymentCompletedEvent);
+
+                // Publish payment success notification event (de gui mail va thong bao)
+                var paymentSuccessNotificationEvent = new PaymentSuccessNotificationEvent
+                {
+                    PaymentId = payment.Id,
+                    OrderId = payment.OrderId,
+                    UserId = successOrder.UserId,
+                    Amount = payment.Amount,
+                    PaidAt = payment.PaidAt ?? DateTime.UtcNow
+                };
+                _messagePublisher.PublishToQueue("payment.success.notification", paymentSuccessNotificationEvent);
             }
 
             return true;

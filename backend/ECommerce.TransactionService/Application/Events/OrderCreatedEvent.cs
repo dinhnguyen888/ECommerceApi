@@ -1,3 +1,5 @@
+using System;
+
 namespace ECommerce.TransactionService.Application.Events
 {
     public class OrderCreatedEvent

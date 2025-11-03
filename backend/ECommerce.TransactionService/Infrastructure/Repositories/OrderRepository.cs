@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,6 +44,16 @@ namespace ECommerce.TransactionService.Infrastructure.Repositories
         {
             return await _db.Orders
                 .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<Order>> GetExpiredPendingOrdersAsync()
+        {
+            var now = DateTime.UtcNow;
+            return await _db.Orders
+                .Where(o => o.Status == OrderStatus.Pending && o.ExpiresAt <= now)
+                .Include(o => o.OrderItems)
+                .Include(o => o.Payments)
                 .ToListAsync();
         }
 
