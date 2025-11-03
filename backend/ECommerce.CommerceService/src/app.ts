@@ -22,25 +22,25 @@ export async function createApp(): Promise<Express> {
   const rabbitMqConnection = new RabbitMqConnection();
   await rabbitMqConnection.connect();
 
-  // Initialize repositories
+  // Khoi tao repositories
   const productRepository = new ProductRepository();
   const brandRepository = new BrandRepository();
   const categoryRepository = new CategoryRepository();
   const cartRepository = new CartRepository();
 
-  // Initialize services
+  // Khoi tao services
   const productService = new ProductService(productRepository);
   const brandService = new BrandService(brandRepository);
   const categoryService = new CategoryService(categoryRepository);
   const cartService = new CartService(cartRepository);
 
-  // Initialize controllers
+  // Khoi tao controllers
   const productController = new ProductController(productService);
   const brandController = new BrandController(brandService);
   const categoryController = new CategoryController(categoryService);
   const cartController = new CartController(cartService);
 
-  // Create Express app
+  // Tao Express app
   const app = express();
 
   // Middlewares

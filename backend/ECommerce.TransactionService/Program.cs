@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -77,7 +78,14 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireClaim(ClaimTypes.Role, "Admin"));
+
+    options.AddPolicy("ClientOrAdmin", policy =>
+        policy.RequireClaim(ClaimTypes.Role, new[] { "Admin", "Client" }));
+});
 
 // Dependency Injection - Repositories
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();

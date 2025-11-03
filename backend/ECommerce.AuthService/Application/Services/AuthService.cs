@@ -54,20 +54,20 @@ namespace ECommerce.AuthService.Application.Services
             user.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             user.Email = normalizedEmail;
             user.UserName = normalizedUserName;
-            user.IsActive = false; // Chưa verify thì không active
+            user.IsActive = false; // Chua verify thi khong active
             user.CreatedAt = DateTime.UtcNow;
             user.UpdatedAt = DateTime.UtcNow;
 
             await _repo.AddUserAsync(user);
 
-            // Tạo verification token
+            // Tao verification token
             var verificationToken = _verificationTokenService.GenerateVerificationToken(user.Id, user.Email);
             
-            // Tạo verify URL
+            // Tao verify URL
             var baseUrl = _config["AppSettings:BaseUrl"] ?? "https://localhost:7001";
             var verifyUrl = $"{baseUrl}/api/auth/verify-register?token={Uri.EscapeDataString(verificationToken)}";
 
-            // Bắn notification sau cùng với VerifyUrl để NotificationService có thể gửi email
+            // Ban notification sau cung voi VerifyUrl de NotificationService co the gui email
             var registeredEvent = new UserRegisteredEvent
             {
                 UserId = user.Id,
@@ -117,7 +117,7 @@ namespace ECommerce.AuthService.Application.Services
                 };
             }
 
-            // Kiểm tra email có khớp không
+            // Kiem tra email co khop khong
             if (user.Email != email)
             {
                 return new VerifyRegistrationResponseDto
@@ -127,7 +127,7 @@ namespace ECommerce.AuthService.Application.Services
                 };
             }
 
-            // Activate user
+            // Kich hoat nguoi dung
             user.IsActive = true;
             user.UpdatedAt = DateTime.UtcNow;
             await _repo.UpdateUserAsync(user);
@@ -259,7 +259,7 @@ namespace ECommerce.AuthService.Application.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        // cac private method de lay thoi gian token va refresh token
+        // Cac private method de lay thoi gian token va refresh token
         private int GetAccessTokenLifetimeMinutes()
         {
             var jwtSection = _config.GetSection("Jwt");

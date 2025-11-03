@@ -6,6 +6,6 @@ namespace ECommerce.AuthService.Application.Events
         public string Email { get; set; }
         public string UserName { get; set; }
         public DateTime RegisteredAt { get; set; }
-        public string VerifyUrl { get; set; } // URL để verify registration
+        public string VerifyUrl { get; set; } // URL de verify registration
     }
 }

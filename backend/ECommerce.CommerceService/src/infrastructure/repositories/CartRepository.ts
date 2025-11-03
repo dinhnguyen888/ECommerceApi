@@ -21,7 +21,7 @@ export class CartRepository implements ICartRepository {
 
   async update(id: string, cart: Partial<Cart>): Promise<Cart | null> {
     cart.updatedAt = new Date();
-    // Calculate totalAmount if items updated
+    // Tinh toan totalAmount neu items duoc cap nhat
     if (cart.items) {
       cart.totalAmount = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     }

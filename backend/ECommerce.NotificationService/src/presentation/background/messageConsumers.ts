@@ -35,7 +35,7 @@ export async function setupMessageConsumers(
     const consumer = new RabbitMqConsumer(rabbitMqConnection);
 
     await consumer.consume<UserRegisteredEvent>('user.registered', async (event) => {
-        // Tạo notification
+        // Tao notification
         const notification = await notificationService.createNotification({
             userId: event.UserId,
             title: 'Chao mung ban den voi he thong!',
@@ -43,8 +43,8 @@ export async function setupMessageConsumers(
             type: NotificationType.SYSTEM
         });
 
-        // Gửi email với verify URL
-        const emailSubject = 'Xác thực đăng ký tài khoản';
+        // Gui email voi verify URL
+        const emailSubject = 'Xac thuc dang ky tai khoan';
         const emailHtml = `
             <html>
                 <body>

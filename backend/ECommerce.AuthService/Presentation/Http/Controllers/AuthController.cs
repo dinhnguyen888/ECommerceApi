@@ -49,26 +49,26 @@ namespace ECommerce.AuthService.Presentation.Http.Controllers
             {
                 var result = await _authService.VerifyRegistrationAsync(token);
                 
-                // Lấy frontend callback URL từ configuration
+                // Lay frontend callback URL tu configuration
                 var frontendCallbackUrl = _configuration["AppSettings:FrontendCallbackUrl"] ?? "http://localhost:3000/auth/verify-callback";
                 
-                // Chuyển đổi result thành JSON và encode thành query string
+                // Chuyen doi result thanh JSON va encode thanh query string
                 var jsonData = JsonSerializer.Serialize(result, new JsonSerializerOptions 
                 { 
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
                 });
                 
-                // Encode JSON để làm query string
+                // Encode JSON de lam query string
                 var encodedData = Uri.EscapeDataString(jsonData);
                 
-                // Redirect tới frontend với query string
+                // Redirect toi frontend voi query string
                 var redirectUrl = $"{frontendCallbackUrl}?data={encodedData}";
                 
                 return Redirect(redirectUrl);
             }
             catch (System.Exception ex)
             {
-                // Nếu có lỗi, vẫn redirect nhưng với error message
+                // Neu co loi, van redirect nhung voi error message
                 var frontendCallbackUrl = _configuration["AppSettings:FrontendCallbackUrl"] ?? "http://localhost:3000/auth/verify-callback";
                 var errorResult = new VerifyRegistrationResponseDto
                 {

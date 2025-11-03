@@ -28,7 +28,7 @@ namespace ECommerce.AuthService.Application.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId),
                 new Claim(JwtRegisteredClaimNames.Email, email),
-                new Claim("type", "verification"), // Đánh dấu đây là verification token
+                new Claim("type", "verification"), // Danh dau day la verification token
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
@@ -36,7 +36,7 @@ namespace ECommerce.AuthService.Application.Services
                 issuer: jwtSection["Issuer"],
                 audience: jwtSection["Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(5), // 5 phút
+                expires: DateTime.UtcNow.AddMinutes(5), // 5 phut
                 signingCredentials: creds
             );
 
@@ -65,7 +65,7 @@ namespace ECommerce.AuthService.Application.Services
 
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
                 
-                // Kiểm tra xem có phải là verification token không
+                // Kiem tra xem co phai la verification token khong
                 var tokenType = principal.FindFirst("type")?.Value;
                 if (tokenType != "verification")
                 {
