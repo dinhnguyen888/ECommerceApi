@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using ECommerce.AuthService.Application.Interfaces;
 using ECommerce.AuthService.Application.Dtos;
+using ECommerce.AuthService.Application.Events;
+using ECommerce.AuthService.Application.Services;
 using Microsoft.Extensions.Configuration;
 
 namespace ECommerce.AuthService.Presentation.Http.Controllers
@@ -13,31 +15,81 @@ namespace ECommerce.AuthService.Presentation.Http.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IConfiguration _configuration;
+        private readonly IMessagePublisher _messagePublisher;
+        private readonly EmailSentNotificationService _emailSentNotificationService;
         
-        public AuthController(IAuthService authService, IConfiguration configuration)
+        public AuthController(IAuthService authService, IConfiguration configuration, IMessagePublisher messagePublisher, EmailSentNotificationService emailSentNotificationService)
         {
             _authService = authService;
             _configuration = configuration;
+            _messagePublisher = messagePublisher;
+            _emailSentNotificationService = emailSentNotificationService;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
+            string? userId = null;
             try
             {
                 var result = await _authService.RegisterAsync(dto);
-                return Ok(result);
+                userId = result.UserId;
+                
+                // Publish message toi RabbitMQ sau khi register thanh cong
+                var registeredEvent = new UserRegisteredEvent
+                {
+                    UserId = result.UserId,
+                    Email = result.Email,
+                    UserName = result.UserName,
+                    RegisteredAt = result.RegisteredAt,
+                    VerifyUrl = result.VerifyUrl
+                };
+                _messagePublisher.PublishToQueue("user.registered", registeredEvent);
+                
+                // Doi trong vong 10 giay de bat email.sent event tu queue
+                var timeout = TimeSpan.FromSeconds(10);
+                var emailSent = await _emailSentNotificationService.WaitForEmailSentAsync(result.UserId, timeout);
+                
+                // Neu sau 10 giay khong co email.sent event, rollback transaction
+                if (!emailSent)
+                {
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        await _authService.DeleteUserAsync(userId);
+                    }
+                    return StatusCode(500, new { message = "Khong nhan duoc xac nhan gui email. Dang ky da bi huy." });
+                }
+                
+                // Tra ve response neu email da duoc gui
+                return Ok(new { 
+                    Message = result.Message 
+                });
             }
             catch (System.ArgumentException ex)
             {
+                // Rollback neu co loi
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    try { await _authService.DeleteUserAsync(userId); } catch { }
+                }
                 return BadRequest(new { message = ex.Message });
             }
             catch (System.InvalidOperationException ex)
             {
+                // Rollback neu co loi
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    try { await _authService.DeleteUserAsync(userId); } catch { }
+                }
                 return Conflict(new { message = ex.Message });
             }
             catch (System.Exception ex)
             {
+                // Rollback neu co loi
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    try { await _authService.DeleteUserAsync(userId); } catch { }
+                }
                 return StatusCode(500, new { message = ex.Message });
             }
         }
@@ -144,5 +196,6 @@ namespace ECommerce.AuthService.Presentation.Http.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
     }
 }

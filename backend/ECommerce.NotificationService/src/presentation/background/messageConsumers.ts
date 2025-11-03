@@ -1,5 +1,6 @@
 import { RabbitMqConnection } from '../../infrastructure/messageBroker/rabbitmqConnection';
 import { RabbitMqConsumer } from '../../infrastructure/messageBroker/rabbitmqConsumer';
+import { RabbitMqPublisher } from '../../infrastructure/messageBroker/rabbitmqPublisher';
 import { NotificationService } from '../../application/services/NotificationService';
 import { EmailService } from '../../application/services/EmailService';
 import { NotificationType } from '../../application/entities/Notification';
@@ -10,6 +11,14 @@ interface UserRegisteredEvent {
     UserName: string;
     RegisteredAt: string;
     VerifyUrl: string; 
+}
+
+interface EmailSentEvent {
+    UserId: string;
+    Email: string;
+    NotificationId: string;
+    Success: boolean;
+    SentAt: string;
 }
 
 interface OrderCreatedEvent {
@@ -33,6 +42,7 @@ export async function setupMessageConsumers(
     emailService: EmailService
 ): Promise<void> {
     const consumer = new RabbitMqConsumer(rabbitMqConnection);
+    const publisher = new RabbitMqPublisher(rabbitMqConnection);
 
     await consumer.consume<UserRegisteredEvent>('user.registered', async (event) => {
         // Tao notification
@@ -72,13 +82,23 @@ export async function setupMessageConsumers(
             Đội ngũ E-Commerce
         `;
 
-        await emailService.sendEmail({
+        const emailSent = await emailService.sendEmail({
             to: event.Email,
             subject: emailSubject,
             text: emailText,
             html: emailHtml,
             notificationId: notification.id
         });
+
+        // Publish event de thong bao cho AuthService biet email da duoc gui
+        const emailSentEvent: EmailSentEvent = {
+            UserId: event.UserId,
+            Email: event.Email,
+            NotificationId: notification.id || '',
+            Success: emailSent,
+            SentAt: new Date().toISOString()
+        };
+        publisher.publishToQueue('email.sent', emailSentEvent);
     });
 
     await consumer.consume<OrderCreatedEvent>('order.created', async (event) => {

@@ -10,5 +10,6 @@ namespace ECommerce.AuthService.Application.Interfaces
         Task<AuthResponseDto> RefreshTokenAsync(string refreshToken);
         Task LogoutAsync(string userId, string refreshToken);
         Task<VerifyRegistrationResponseDto> VerifyRegistrationAsync(string token);
+        Task DeleteUserAsync(string userId);
     }
 }

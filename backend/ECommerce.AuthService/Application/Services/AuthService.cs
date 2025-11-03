@@ -10,7 +10,6 @@ using BCrypt.Net;
 using ECommerce.AuthService.Application.Dtos;
 using ECommerce.AuthService.Application.Entities;
 using ECommerce.AuthService.Application.Interfaces;
-using ECommerce.AuthService.Application.Events;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -21,15 +20,13 @@ namespace ECommerce.AuthService.Application.Services
         private readonly IAuthRepository _repo;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
-        private readonly IMessagePublisher _messagePublisher;
         private readonly IVerificationTokenService _verificationTokenService;
 
-        public AuthService(IAuthRepository repo, IMapper mapper, IConfiguration config, IMessagePublisher messagePublisher, IVerificationTokenService verificationTokenService)
+        public AuthService(IAuthRepository repo, IMapper mapper, IConfiguration config, IVerificationTokenService verificationTokenService)
         {
             _repo = repo;
             _mapper = mapper;
             _config = config;
-            _messagePublisher = messagePublisher;
             _verificationTokenService = verificationTokenService;
         }
 
@@ -67,21 +64,14 @@ namespace ECommerce.AuthService.Application.Services
             var baseUrl = _config["AppSettings:BaseUrl"] ?? "https://localhost:7001";
             var verifyUrl = $"{baseUrl}/api/auth/verify-register?token={Uri.EscapeDataString(verificationToken)}";
 
-            // Ban notification sau cung voi VerifyUrl de NotificationService co the gui email
-            var registeredEvent = new UserRegisteredEvent
-            {
-                UserId = user.Id,
-                Email = user.Email,
-                UserName = user.UserName,
-                RegisteredAt = user.CreatedAt,
-                VerifyUrl = verifyUrl
-            };
-            _messagePublisher.PublishToQueue("user.registered", registeredEvent);
-
             return new RegisterResponseDto
             {
                 VerifyUrl = verifyUrl,
-                Message = "Registration successful. Please check your email for verification link."
+                Message = "Registration successful. Please check your email for verification link.",
+                UserId = user.Id,
+                Email = user.Email,
+                UserName = user.UserName,
+                RegisteredAt = user.CreatedAt
             };
         }
 
@@ -270,6 +260,11 @@ namespace ECommerce.AuthService.Application.Services
         {
             var jwtSection = _config.GetSection("Jwt");
             return int.TryParse(jwtSection["RefreshTokenLifetimeDays"], out var d) ? d : 14;
+        }
+
+        public async Task DeleteUserAsync(string userId)
+        {
+            await _repo.DeleteUserAsync(userId);
         }
     }
 }

@@ -95,9 +95,20 @@ builder.Services.AddScoped<IUserService, UserService>();
 // RabbitMQ
 builder.Services.AddSingleton<RabbitMqConnection>(sp => new RabbitMqConnection(builder.Configuration));
 builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
-builder.Services.AddScoped<IMessageConsumer, RabbitMqConsumer>();
+builder.Services.AddSingleton<IMessageConsumer, RabbitMqConsumer>();
+
+// Email Sent Notification Service - bridge giua consumer va controller
+builder.Services.AddSingleton<EmailSentNotificationService>();
 
 var app = builder.Build();
+
+// Setup RabbitMQ consumers
+var rabbitMqConnection = app.Services.GetRequiredService<RabbitMqConnection>();
+var consumer = app.Services.GetRequiredService<IMessageConsumer>();
+var emailSentNotificationService = app.Services.GetRequiredService<EmailSentNotificationService>();
+var messageConsumers = new MessageConsumers(consumer, emailSentNotificationService);
+messageConsumers.SetupConsumers();
+Console.WriteLine("RabbitMQ consumers da duoc khoi tao");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
