@@ -1,6 +1,7 @@
 import { RabbitMqConnection } from '../../infrastructure/messageBroker/rabbitmqConnection';
 import { RabbitMqConsumer } from '../../infrastructure/messageBroker/rabbitmqConsumer';
 import { NotificationService } from '../../application/services/NotificationService';
+import { EmailService } from '../../application/services/EmailService';
 import { NotificationType } from '../../application/entities/Notification';
 
 interface UserRegisteredEvent {
@@ -8,6 +9,7 @@ interface UserRegisteredEvent {
     Email: string;
     UserName: string;
     RegisteredAt: string;
+    VerifyUrl: string; 
 }
 
 interface OrderCreatedEvent {
@@ -27,16 +29,55 @@ interface PaymentCompletedEvent {
 
 export async function setupMessageConsumers(
     rabbitMqConnection: RabbitMqConnection,
-    notificationService: NotificationService
+    notificationService: NotificationService,
+    emailService: EmailService
 ): Promise<void> {
     const consumer = new RabbitMqConsumer(rabbitMqConnection);
 
     await consumer.consume<UserRegisteredEvent>('user.registered', async (event) => {
-        await notificationService.createNotification({
+        // Tạo notification
+        const notification = await notificationService.createNotification({
             userId: event.UserId,
             title: 'Chao mung ban den voi he thong!',
-            message: `Xin chao ${event.UserName}, cam on ban da dang ky tai khoan.`,
+            message: `Xin chao ${event.UserName}, cam on ban da dang ky tai khoan. Vui long xac thuc email cua ban.`,
             type: NotificationType.SYSTEM
+        });
+
+        // Gửi email với verify URL
+        const emailSubject = 'Xác thực đăng ký tài khoản';
+        const emailHtml = `
+            <html>
+                <body>
+                    <h2>Xin chào ${event.UserName}!</h2>
+                    <p>Cảm ơn bạn đã đăng ký tài khoản tại hệ thống E-Commerce.</p>
+                    <p>Vui lòng click vào link bên dưới để xác thực email của bạn:</p>
+                    <p><a href="${event.VerifyUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Xác thực Email</a></p>
+                    <p>Hoặc copy link sau vào trình duyệt:</p>
+                    <p>${event.VerifyUrl}</p>
+                    <p><strong>Lưu ý:</strong> Link này sẽ hết hạn sau 5 phút.</p>
+                    <p>Trân trọng,<br>Đội ngũ E-Commerce</p>
+                </body>
+            </html>
+        `;
+        const emailText = `
+            Xin chào ${event.UserName}!
+            
+            Cảm ơn bạn đã đăng ký tài khoản tại hệ thống E-Commerce.
+            Vui lòng click vào link sau để xác thực email của bạn:
+            ${event.VerifyUrl}
+            
+            Lưu ý: Link này sẽ hết hạn sau 5 phút.
+            
+            Trân trọng,
+            Đội ngũ E-Commerce
+        `;
+
+        await emailService.sendEmail({
+            to: event.Email,
+            subject: emailSubject,
+            text: emailText,
+            html: emailHtml,
+            notificationId: notification.id
         });
     });
 

@@ -60,21 +60,23 @@ namespace ECommerce.AuthService.Application.Services
 
             await _repo.AddUserAsync(user);
 
-            var registeredEvent = new UserRegisteredEvent
-            {
-                UserId = user.Id,
-                Email = user.Email,
-                UserName = user.UserName,
-                RegisteredAt = user.CreatedAt
-            };
-            _messagePublisher.PublishToQueue("user.registered", registeredEvent);
-
             // Tạo verification token
             var verificationToken = _verificationTokenService.GenerateVerificationToken(user.Id, user.Email);
             
             // Tạo verify URL
             var baseUrl = _config["AppSettings:BaseUrl"] ?? "https://localhost:7001";
             var verifyUrl = $"{baseUrl}/api/auth/verify-register?token={Uri.EscapeDataString(verificationToken)}";
+
+            // Bắn notification sau cùng với VerifyUrl để NotificationService có thể gửi email
+            var registeredEvent = new UserRegisteredEvent
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                UserName = user.UserName,
+                RegisteredAt = user.CreatedAt,
+                VerifyUrl = verifyUrl
+            };
+            _messagePublisher.PublishToQueue("user.registered", registeredEvent);
 
             return new RegisterResponseDto
             {
@@ -257,6 +259,7 @@ namespace ECommerce.AuthService.Application.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        // cac private method de lay thoi gian token va refresh token
         private int GetAccessTokenLifetimeMinutes()
         {
             var jwtSection = _config.GetSection("Jwt");

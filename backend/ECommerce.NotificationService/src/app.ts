@@ -6,7 +6,10 @@ import * as dotenv from 'dotenv';
 import { connectDatabase } from './infrastructure/config/database';
 import { RabbitMqConnection } from './infrastructure/messageBroker/rabbitmqConnection';
 import { NotificationRepository } from './infrastructure/repositories/NotificationRepository';
+import { EmailLogRepository } from './infrastructure/repositories/EmailLogRepository';
 import { NotificationService } from './application/services/NotificationService';
+import { EmailService } from './application/services/EmailService';
+import { NodemailerEmailService } from './infrastructure/config/email';
 import { setupMessageConsumers } from './presentation/background/messageConsumers';
 import routes from './presentation/http/routes';
 import { errorHandler } from './presentation/http/middlewares/errorHandler';
@@ -22,7 +25,11 @@ connectDatabase().then(async () => {
     const notificationRepository = new NotificationRepository();
     const notificationService = new NotificationService(notificationRepository);
 
-    await setupMessageConsumers(rabbitMqConnection, notificationService);
+    const emailLogRepository = new EmailLogRepository();
+    const nodemailerEmailService = new NodemailerEmailService();
+    const emailService = new EmailService(nodemailerEmailService, emailLogRepository);
+
+    await setupMessageConsumers(rabbitMqConnection, notificationService, emailService);
     console.log('RabbitMQ consumers da duoc khoi tao');
 }).catch(err => {
     console.error('Loi khoi tao RabbitMQ:', err);
