@@ -13,12 +13,12 @@ const LoginPage = () => {
 
     const handleGoogleLogin = () => {
         window.location.href =
-            "https://bettercalldinh.ddns.net/api/OAuth/google-login";
+            `${import.meta.env.VITE_API_URL}OAuth/google-login`;
     };
 
     const handleGithubLogin = () => {
         window.location.href =
-            "https://bettercalldinh.ddns.net/api/OAuth/github-login";
+            `${import.meta.env.VITE_API_URL}OAuth/github-login`;
     };
 
     const onFinish = async (values) => {
