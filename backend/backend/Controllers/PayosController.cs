@@ -1,0 +1,72 @@
+
+using Microsoft.AspNetCore.Mvc;
+using Net.payOS;
+using Net.payOS.Types;
+using System.Security.Cryptography.Xml;
+using Newtonsoft.Json.Linq;
+using Net.payOS.Utils;
+using backend.Dtos;
+using static System.Net.WebRequestMethods;
+
+namespace backend.Controllers
+{
+
+    [Route("api/[controller]")]
+    [ApiController]
+    public class PayosController : ControllerBase
+    {
+        private readonly IPayosService _payOS;
+        public PayosController(IPayosService payOS)
+        {
+            _payOS = payOS;
+        }
+
+        [HttpPost("create")]
+        public async Task<IActionResult> CreatePaymentLink([FromQuery] PaymentPostDto body)
+        {
+            try
+            {
+                var createPayosPayment = await _payOS.CreatePaymentLink(body);
+
+                return Created(createPayosPayment, createPayosPayment);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpPost("ipn")]
+        public async Task<IActionResult> ReceiveWebhook([FromBody] WebhookType? webhookBody)
+        {
+            try
+            {
+                var result = await _payOS.ReceiveWebhook(webhookBody);
+                if (webhookBody == null) return Ok();
+                return Ok();
+            }
+            catch (ArgumentNullException arEx)
+            {
+                // accept argumentNull because payos will send webhook with sample input,
+                // paymentId not exist with sample input
+                return Ok(); 
+            }
+            catch (HttpRequestException httpEx)
+            {
+                // Log l?i c? th? khi g?i HTTP th?t b?i
+                Console.WriteLine($"HttpRequestException: {httpEx}");
+                return BadRequest(httpEx.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex}");
+                return BadRequest(new { error = ex.Message });
+            }
+
+        }
+
+
+    }
+
+}
